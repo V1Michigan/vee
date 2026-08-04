@@ -1,0 +1,23 @@
+{
+  "name": "v1-ops-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "eve dev",
+    "build": "eve build",
+    "start": "eve start",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@vercel/connect": "0.2.7",
+    "ai": "7.0.26",
+    "eve": "^0.24.6",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "7.0.1-rc"
+  },
+  "packageManager": "pnpm@10.28.2"
+}
