@@ -5,10 +5,10 @@ hosted on Vercel.
 
 Vee responds to Slack mentions and direct messages, keeps durable conversation
 state within Slack threads, can use Eve's built-in tools, and connects to the
-V1 team's shared Notion workspace and its own GitHub repository through MCP.
-Its identity and behavior are defined in `agent/instructions.md`; model
-selection lives in `agent/agent.ts`; and the Slack channel is configured in
-`agent/channels/slack.ts`.
+V1 team's shared Notion workspace, public Slack history, Granola meeting notes,
+and its own GitHub repository through MCP. Its identity and behavior are defined
+in `agent/instructions.md`; model selection lives in `agent/agent.ts`; and the
+Slack channel is configured in `agent/channels/slack.ts`.
 
 GitHub access is restricted to reading `V1Michigan/vee`, filing issues, and
 creating changes on `vee/*` branches for draft pull requests. Vee is instructed
@@ -43,3 +43,8 @@ Notion team account. That grant is then reused by Vee across Slack users.
 
 GitHub uses the same shared-grant model. Authorize the `github/vee-github`
 connector once with access limited to the `V1Michigan/vee` repository.
+
+Slack search and Granola use per-user authorization. Slack search requests only
+`search:read.public`, so Vee cannot search private channels or direct messages.
+Granola follows each user's active workspace and note permissions; its MCP
+server does not support a shared service account.
