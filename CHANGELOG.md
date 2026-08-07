@@ -9,6 +9,10 @@
 - Guardrails that restrict Vee to `V1Michigan/vee`, require `vee/*` branches,
   and prohibit direct changes to `main`, self-merges, settings, secrets,
   workflows, and releases.
+- Per-user search across public Slack channels using Slack's official MCP
+  server and the `search:read.public` scope.
+- Per-user Granola access for meeting notes, summaries, action items, and
+  transcripts through Granola's official MCP server.
 
 ## [0.0.1] - 2026-08-04
 
