@@ -26,7 +26,7 @@ export default defineMcpClientConnection({
     "X-MCP-Tools": allowedTools.join(","),
   },
   auth: connect({
-    connector: "github/vee-github",
+    connector: "github/vee",
     principalType: "user",
     createSubject: () => ({
       type: "user" as const,

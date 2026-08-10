@@ -22,6 +22,8 @@
 
 - Use the AI SDK's runtime-aware OIDC authentication for AI Gateway reports
   instead of expecting a build-time token in the Function environment.
+- Match Vee's GitHub connection to the attached `github/vee` connector so its
+  shared repository authorization can be resolved at runtime.
 
 ## [0.0.1] - 2026-08-04
 

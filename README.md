@@ -41,7 +41,7 @@ pnpm exec eve deploy
 The first person to use Notion from Slack must authorize Vee with the shared V1
 Notion team account. That grant is then reused by Vee across Slack users.
 
-GitHub uses the same shared-grant model. Authorize the `github/vee-github`
+GitHub uses the same shared-grant model. Authorize the `github/vee`
 connector once with access limited to the `V1Michigan/vee` repository.
 
 Slack search and Granola use per-user authorization. Slack search requests only
