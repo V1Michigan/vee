@@ -1,4 +1,5 @@
 import { defineTool } from "eve/tools";
+import { gateway } from "ai";
 import { z } from "zod";
 
 const usageSchema = z.object({
@@ -30,14 +31,14 @@ const outputSchema = z.object({
 type RawReportRow = {
   day?: unknown;
   hour?: unknown;
-  total_cost?: unknown;
-  market_cost?: unknown;
-  request_count?: unknown;
-  input_tokens?: unknown;
-  output_tokens?: unknown;
-  cached_input_tokens?: unknown;
-  cache_creation_input_tokens?: unknown;
-  reasoning_tokens?: unknown;
+  totalCost?: unknown;
+  marketCost?: unknown;
+  requestCount?: unknown;
+  inputTokens?: unknown;
+  outputTokens?: unknown;
+  cachedInputTokens?: unknown;
+  cacheCreationInputTokens?: unknown;
+  reasoningTokens?: unknown;
 };
 
 type UsageMetrics = z.infer<typeof usageSchema>;
@@ -94,16 +95,16 @@ function aggregate(
   const result = emptyMetrics(period, start, end);
 
   for (const row of rows) {
-    result.totalCostUsd += finiteNumber(row.total_cost);
-    result.marketCostUsd += finiteNumber(row.market_cost);
-    result.requestCount += finiteNumber(row.request_count);
-    result.inputTokens += finiteNumber(row.input_tokens);
-    result.outputTokens += finiteNumber(row.output_tokens);
-    result.cachedInputTokens += finiteNumber(row.cached_input_tokens);
+    result.totalCostUsd += finiteNumber(row.totalCost);
+    result.marketCostUsd += finiteNumber(row.marketCost);
+    result.requestCount += finiteNumber(row.requestCount);
+    result.inputTokens += finiteNumber(row.inputTokens);
+    result.outputTokens += finiteNumber(row.outputTokens);
+    result.cachedInputTokens += finiteNumber(row.cachedInputTokens);
     result.cacheCreationInputTokens += finiteNumber(
-      row.cache_creation_input_tokens,
+      row.cacheCreationInputTokens,
     );
-    result.reasoningTokens += finiteNumber(row.reasoning_tokens);
+    result.reasoningTokens += finiteNumber(row.reasoningTokens);
   }
 
   result.totalCostUsd = roundCurrency(result.totalCostUsd);
@@ -112,45 +113,24 @@ function aggregate(
 }
 
 async function fetchReport(
-  token: string,
   startDate: string,
   endDate: string,
   datePart: "day" | "hour",
-  signal: AbortSignal,
 ): Promise<RawReportRow[]> {
-  const url = new URL("https://ai-gateway.vercel.sh/v1/report");
-  url.searchParams.set("start_date", startDate);
-  url.searchParams.set("end_date", endDate);
-  url.searchParams.set("group_by", "day");
-  url.searchParams.set("date_part", datePart);
-
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-    signal,
-  });
-
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error(
-        "AI Gateway reporting rejected the credentials or plan. Custom Reporting requires a Pro or Enterprise team and a valid AI Gateway API key or Vercel OIDC token.",
-      );
-    }
-
+  try {
+    const report = await gateway.getSpendReport({
+      startDate,
+      endDate,
+      groupBy: "day",
+      datePart,
+    });
+    return report.results;
+  } catch (error) {
     throw new Error(
-      `AI Gateway could not return the usage report (HTTP ${response.status}).`,
+      "AI Gateway could not return the usage report. Confirm that Custom Reporting is available for the Vercel team and that this deployment belongs to that team.",
+      { cause: error },
     );
   }
-
-  const payload: unknown = await response.json();
-  return typeof payload === "object" &&
-    payload !== null &&
-    "results" in payload &&
-    Array.isArray(payload.results)
-    ? (payload.results as RawReportRow[])
-    : [];
 }
 
 export default defineTool({
@@ -162,14 +142,6 @@ export default defineTool({
     const now = new Date();
     if (cache && cache.expiresAt > now.getTime()) {
       return cache.value;
-    }
-
-    const token =
-      process.env.VERCEL_OIDC_TOKEN ?? process.env.AI_GATEWAY_API_KEY;
-    if (!token) {
-      throw new Error(
-        "AI Gateway usage reporting is not configured. Deploy on Vercel with OIDC enabled or set AI_GATEWAY_API_KEY in the server environment.",
-      );
     }
 
     const allTimeStart =
@@ -187,20 +159,8 @@ export default defineTool({
     const hourlyQueryStart = utcDate(twentyFourHourCutoff);
 
     const [dailyRows, hourlyRows] = await Promise.all([
-      fetchReport(
-        token,
-        allTimeStart,
-        today,
-        "day",
-        ctx.abortSignal,
-      ),
-      fetchReport(
-        token,
-        hourlyQueryStart,
-        today,
-        "hour",
-        ctx.abortSignal,
-      ),
+      fetchReport(allTimeStart, today, "day"),
+      fetchReport(hourlyQueryStart, today, "hour"),
     ]);
 
     const rowsSinceDay = (start: string) =>

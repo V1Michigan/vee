@@ -18,6 +18,11 @@
 - A read-only, BYOK-aware tool for reporting team-wide Vercel AI Gateway
   requests, token usage, and costs across four time windows.
 
+### Fixed
+
+- Use the AI SDK's runtime-aware OIDC authentication for AI Gateway reports
+  instead of expecting a build-time token in the Function environment.
+
 ## [0.0.1] - 2026-08-04
 
 ### About this release
