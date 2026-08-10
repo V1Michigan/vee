@@ -13,6 +13,10 @@
   server and the `search:read.public` scope.
 - Per-user Granola access for meeting notes, summaries, action items, and
   transcripts through Granola's official MCP server.
+- Notion-first guidance for general V1 questions, with multi-source synthesis
+  across Notion, Slack, and Granola when useful.
+- A read-only, BYOK-aware tool for reporting team-wide Vercel AI Gateway
+  requests, token usage, and costs across four time windows.
 
 ## [0.0.1] - 2026-08-04
 

@@ -48,3 +48,24 @@ Slack search and Granola use per-user authorization. Slack search requests only
 `search:read.public`, so Vee cannot search private channels or direct messages.
 Granola follows each user's active workspace and note permissions; its MCP
 server does not support a shared service account.
+
+## AI Gateway usage reporting
+
+Vee's `check_ai_gateway_usage` tool uses Vercel's Custom Reporting API to show
+team-wide AI Gateway activity for all time, the past 30 days, the past 7 days,
+and the past 24 hours. Each period includes request volume, token usage, the
+amount charged through Vercel, and market-price usage across both system and
+BYOK credentials.
+
+On Vercel, the tool uses the automatically provided `VERCEL_OIDC_TOKEN`. For
+local development, add a team AI Gateway key:
+
+```bash
+AI_GATEWAY_API_KEY=
+```
+
+Custom Reporting currently requires a Pro or Enterprise Vercel team. Reports
+can lag by several minutes. The tool caches results for five minutes and makes
+two reporting queries when the cache is cold. Set
+`AI_GATEWAY_USAGE_START_DATE=YYYY-MM-DD` only if the default all-time starting
+date of `2020-01-01` needs to be changed.
