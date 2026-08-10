@@ -6,15 +6,19 @@ hosted on Vercel.
 Vee responds to Slack mentions and direct messages, keeps durable conversation
 state within Slack threads, can use Eve's built-in tools, and connects to the
 V1 team's shared Notion workspace, public Slack history, Granola meeting notes,
-and its own GitHub repository through MCP. Its identity and behavior are defined
-in `agent/instructions.md`; model selection lives in `agent/agent.ts`; and the
-Slack channel is configured in `agent/channels/slack.ts`.
+and the Vee and website GitHub repositories through MCP. Its identity and
+behavior are defined in `agent/instructions.md`; model selection lives in
+`agent/agent.ts`; and the Slack channel is configured in
+`agent/channels/slack.ts`.
 
-GitHub access is restricted to reading `V1Michigan/vee`, filing issues, and
-creating changes on `vee/*` branches for draft pull requests. Vee is instructed
-never to push to `main`, merge its own pull requests, alter repository settings,
-manage secrets, run workflows, or publish releases. GitHub branch protection is
-the enforcement boundary for `main`.
+GitHub access is restricted to `V1Michigan/vee` (Vee's own code) and
+`V1Michigan/website-v2` (V1 at Michigan's website), including filing issues and
+creating changes on `vee/*` branches for draft pull requests. Vee may suggest
+filing self-feedback in `V1Michigan/vee`; it files website improvement issues
+only when explicitly requested. Vee is instructed never to push to `main`,
+merge its own pull requests, alter repository settings, manage secrets, run
+workflows, or publish releases. GitHub branch protection is the enforcement
+boundary for `main`.
 
 ## Development
 
@@ -42,7 +46,8 @@ The first person to use Notion from Slack must authorize Vee with the shared V1
 Notion team account. That grant is then reused by Vee across Slack users.
 
 GitHub uses the same shared-grant model. Authorize the `github/vee`
-connector once with access limited to the `V1Michigan/vee` repository.
+connector once with access limited to the `V1Michigan/vee` and
+`V1Michigan/website-v2` repositories.
 
 Slack search and Granola use per-user authorization. Slack search requests only
 `search:read.public`, so Vee cannot search private channels or direct messages.

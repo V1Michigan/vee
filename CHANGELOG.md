@@ -24,6 +24,8 @@
   instead of expecting a build-time token in the Function environment.
 - Match Vee's GitHub connection to the attached `github/vee` connector so its
   shared repository authorization can be resolved at runtime.
+- Extend Vee's GitHub scope to `V1Michigan/website-v2` and distinguish
+  self-feedback from explicitly requested website issues.
 
 ## [0.0.1] - 2026-08-04
 

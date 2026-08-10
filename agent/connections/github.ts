@@ -20,7 +20,7 @@ const allowedTools = [
 export default defineMcpClientConnection({
   url: "https://api.githubcopilot.com/mcp/",
   description:
-    "Vee's GitHub repository. Read code, create vee/* branches, open pull requests, and file or review issues.",
+    "V1Michigan/vee contains Vee's own code; V1Michigan/website-v2 contains V1 at Michigan's website. Read code, create vee/* branches, open pull requests, and file or review issues within these repositories.",
   tools: { allow: allowedTools },
   headers: {
     "X-MCP-Tools": allowedTools.join(","),
@@ -37,12 +37,12 @@ export default defineMcpClientConnection({
         {
           type: "github_app_installation",
           org: "V1Michigan",
-          repositories: ["vee"],
+          repositories: ["vee", "website-v2"],
         },
       ],
     },
     validate: true,
     instructions:
-      "Authorize Vee for only the V1Michigan/vee repository using the shared V1 GitHub team account.",
+      "Authorize Vee for only the V1Michigan/vee and V1Michigan/website-v2 repositories using the shared V1 GitHub team account.",
   }),
 });
