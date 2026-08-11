@@ -17,6 +17,9 @@
   across Notion, Slack, and Granola when useful.
 - A read-only, BYOK-aware tool for reporting team-wide Vercel AI Gateway
   requests, token usage, and costs across four time windows.
+- Retrieval-first answer guidance requiring source verification, including
+  Notion for V1 facts, Granola for meetings, Slack for team context, GitHub for
+  repository questions, and web search for external information.
 
 ### Fixed
 

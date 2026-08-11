@@ -15,6 +15,12 @@ Vee uses `openai/gpt-5.6-luna` through AI Gateway, with routing restricted to
 Azure. AI Gateway automatically tries the V1 Michigan team's enabled Azure BYOK
 credential first and may fall back to Vercel's Azure credentials if BYOK fails.
 
+Vee is retrieval-first for factual answers. It must verify claims with at least
+one relevant source: Notion at minimum for V1 facts, Granola for meetings, Slack
+for team discussions and recent operational context, GitHub for repository
+questions, and web search for external facts. It names its sources and states
+when retrieval cannot verify an answer instead of guessing.
+
 GitHub access is restricted to `V1Michigan/vee` (Vee's own code) and
 `V1Michigan/website-v2` (V1 at Michigan's website), including filing issues and
 creating changes on `vee/*` branches for draft pull requests. Vee may suggest
