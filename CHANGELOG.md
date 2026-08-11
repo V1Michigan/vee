@@ -26,6 +26,8 @@
   shared repository authorization can be resolved at runtime.
 - Extend Vee's GitHub scope to `V1Michigan/website-v2` and distinguish
   self-feedback from explicitly requested website issues.
+- Switch Vee from DeepSeek V4 Flash to GPT-5.6 Luna and restrict AI Gateway
+  routing to Azure so the team's Azure BYOK credential is preferred.
 
 ## [0.0.1] - 2026-08-04
 

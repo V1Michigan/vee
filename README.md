@@ -11,6 +11,10 @@ behavior are defined in `agent/instructions.md`; model selection lives in
 `agent/agent.ts`; and the Slack channel is configured in
 `agent/channels/slack.ts`.
 
+Vee uses `openai/gpt-5.6-luna` through AI Gateway, with routing restricted to
+Azure. AI Gateway automatically tries the V1 Michigan team's enabled Azure BYOK
+credential first and may fall back to Vercel's Azure credentials if BYOK fails.
+
 GitHub access is restricted to `V1Michigan/vee` (Vee's own code) and
 `V1Michigan/website-v2` (V1 at Michigan's website), including filing issues and
 creating changes on `vee/*` branches for draft pull requests. Vee may suggest
