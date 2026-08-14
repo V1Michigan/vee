@@ -6,9 +6,9 @@ hosted on Vercel.
 Vee responds to Slack mentions and direct messages, keeps durable conversation
 state within Slack threads, can use Eve's built-in tools, and connects to the
 V1 team's shared Notion workspace, public Slack history, Granola meeting notes,
-and the Vee and website GitHub repositories through MCP. Its identity and
-behavior are defined in `agent/instructions.md`; model selection lives in
-`agent/agent.ts`; and the Slack channel is configured in
+Google Calendar, and the Vee and website GitHub repositories through MCP. Its
+identity and behavior are defined in `agent/instructions.md`; model selection
+lives in `agent/agent.ts`; and the Slack channel is configured in
 `agent/channels/slack.ts`.
 
 Vee uses `openai/gpt-5.6-luna` through AI Gateway, with routing restricted to
@@ -63,6 +63,19 @@ Slack search and Granola use per-user authorization. Slack search requests only
 `search:read.public`, so Vee cannot search private channels or direct messages.
 Granola follows each user's active workspace and note permissions; its MCP
 server does not support a shared service account.
+
+Google Calendar also uses per-user authorization and follows the calendars and
+permissions of each connected Google account. Vee can read calendars, search
+events, check availability, and suggest times. Calendar writes are available,
+but its instructions require explicit confirmation of the exact event details
+before creating, updating, deleting, or responding to an event.
+
+The Calendar connection uses Google's official remote MCP server at
+`https://calendarmcp.googleapis.com/mcp/v1`. Google currently marks it as a
+Developer Preview. Initial setup requires enabling the Google Calendar API and
+Google Calendar MCP API in a Google Cloud project, configuring the OAuth consent
+screen, and completing the `calendarmcp.googleapis.com/google-calendar`
+connector setup in Vercel Connect.
 
 ## AI Gateway usage reporting
 

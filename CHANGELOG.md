@@ -20,6 +20,9 @@
 - Retrieval-first answer guidance requiring source verification, including
   Notion for V1 facts, Granola for meetings, Slack for team context, GitHub for
   repository questions, and web search for external information.
+- Per-user Google Calendar access through Google's official MCP server for
+  schedules, events, availability, meeting suggestions, and confirmation-gated
+  calendar changes.
 
 ### Fixed
 
