@@ -31,6 +31,8 @@
 
 ### Fixed
 
+- Match the AgentMail connection to the attached `mcp.agentmail.to/vee`
+  connector so Vee can resolve its shared organization authorization.
 - Use the AI SDK's runtime-aware OIDC authentication for AI Gateway reports
   instead of expecting a build-time token in the Function environment.
 - Match Vee's GitHub connection to the attached `github/vee` connector so its

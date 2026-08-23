@@ -25,7 +25,7 @@ export default defineMcpClientConnection({
     "Vee's AgentMail inbox for reading, drafting, and sending email on behalf of V1 at Michigan.",
   tools: { allow: allowedTools },
   auth: connect({
-    connector: "agentmail/vee",
+    connector: "mcp.agentmail.to/vee",
     principalType: "user",
     createSubject: () => ({
       type: "user" as const,
