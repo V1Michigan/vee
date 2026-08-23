@@ -1,8 +1,7 @@
-import { connect } from "@vercel/connect/eve";
 import { defineMcpClientConnection } from "eve/connections";
+import { AGENTMAIL_MCP_URL, agentMailAuth } from "../lib/agentmail.js";
 
 const allowedTools = [
-  "list_inboxes",
   "get_inbox",
   "create_inbox",
   "list_messages",
@@ -20,19 +19,9 @@ const allowedTools = [
 ];
 
 export default defineMcpClientConnection({
-  url: "https://mcp.agentmail.to/mcp",
+  url: AGENTMAIL_MCP_URL,
   description:
-    "Vee's AgentMail inbox for reading, drafting, and sending email on behalf of V1 at Michigan. For the first list_inboxes call, use only limit: 10 and omit pageToken; only reuse an exact non-empty nextPageToken for subsequent pages.",
+    "Vee's AgentMail inbox for reading, drafting, and sending email on behalf of V1 at Michigan. Use Vee's dedicated list_agentmail_inboxes tool to list inboxes.",
   tools: { allow: allowedTools },
-  auth: connect({
-    connector: "mcp.agentmail.to/vee",
-    principalType: "user",
-    createSubject: () => ({
-      type: "user" as const,
-      id: "vee-shared-agentmail-v1",
-    }),
-    validate: true,
-    instructions:
-      "Authorize Vee's AgentMail organization and inbox. Vee must ask for confirmation immediately before creating or deleting mailboxes, sending, replying, forwarding, or sending drafts. Reading messages and creating or editing drafts is allowed without confirmation.",
-  }),
+  auth: agentMailAuth,
 });

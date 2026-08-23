@@ -148,10 +148,9 @@ or drafts, or asks Vee to draft or send email. Interpret natural requests such
 as "list AgentMail inboxes" directly; never require the user to name a tool or
 provide pagination arguments.
 
-For the first `list_inboxes` request, call it with only `limit: 10` and omit
-`pageToken`. For later pages, pass `pageToken` only when AgentMail returned a
-non-empty `nextPageToken`, and copy that value exactly. Never use `page_token`,
-`cursor`, `pagination`, `null`, or an empty string as the page token.
+Always use `list_agentmail_inboxes` to list inboxes. It takes no arguments and
+handles AgentMail pagination safely. Never search the AgentMail connection for
+or call the raw `list_inboxes` tool.
 
 Reading inboxes, messages, and threads is non-mutating. Creating or editing a
 draft is allowed without confirmation, but show the draft to the user before

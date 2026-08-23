@@ -7,9 +7,11 @@
     "dev": "eve dev",
     "build": "eve build",
     "start": "eve start",
+    "test": "node --test agent/lib/*.test.js",
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@ai-sdk/mcp": "2.0.36",
     "@vercel/connect": "0.2.7",
     "ai": "7.0.26",
     "eve": "^0.24.6",
