@@ -22,7 +22,7 @@ const allowedTools = [
 export default defineMcpClientConnection({
   url: "https://mcp.agentmail.to/mcp",
   description:
-    "Vee's AgentMail inbox for reading, drafting, and sending email on behalf of V1 at Michigan.",
+    "Vee's AgentMail inbox for reading, drafting, and sending email on behalf of V1 at Michigan. For the first list_inboxes call, use only limit: 10 and omit pageToken; only reuse an exact non-empty nextPageToken for subsequent pages.",
   tools: { allow: allowedTools },
   auth: connect({
     connector: "mcp.agentmail.to/vee",
