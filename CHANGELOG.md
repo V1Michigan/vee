@@ -24,6 +24,11 @@
   schedules, events, availability, meeting suggestions, and confirmation-gated
   calendar changes.
 
+### Changed
+
+- Keep Vee on GPT-5.6 Luna while routing through AI Gateway's OpenAI provider
+  instead of the team's Azure BYOK credential.
+
 ### Fixed
 
 - Use the AI SDK's runtime-aware OIDC authentication for AI Gateway reports

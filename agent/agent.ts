@@ -5,7 +5,7 @@ export default defineAgent({
   modelOptions: {
     providerOptions: {
       gateway: {
-        only: ["azure"],
+        only: ["openai"],
       },
     },
   },

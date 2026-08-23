@@ -12,8 +12,8 @@ lives in `agent/agent.ts`; and the Slack channel is configured in
 `agent/channels/slack.ts`.
 
 Vee uses `openai/gpt-5.6-luna` through AI Gateway, with routing restricted to
-Azure. AI Gateway automatically tries the V1 Michigan team's enabled Azure BYOK
-credential first and may fall back to Vercel's Azure credentials if BYOK fails.
+the OpenAI provider. This bypasses the team's Azure BYOK credential and uses AI
+Gateway's Vercel-managed system credentials.
 
 Vee is retrieval-first for factual answers. It must verify claims with at least
 one relevant source: Notion at minimum for V1 facts, Granola for meetings, Slack
