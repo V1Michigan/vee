@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   AGENTMAIL_MCP_URL,
   agentMailAuth,
+  agentMailAuthOptions,
 } from "../lib/agentmail.js";
 import {
   agentMailInboxListArguments,
@@ -26,11 +27,7 @@ const outputSchema = z.object({
   inboxes: z.array(inboxSchema),
 });
 
-const authOptions = {
-  authKey: "agentmail",
-  displayName: "AgentMail",
-  connection: { url: AGENTMAIL_MCP_URL },
-} as const;
+const authOptions = agentMailAuthOptions;
 
 export default defineTool({
   description:

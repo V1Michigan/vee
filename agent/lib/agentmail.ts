@@ -13,3 +13,9 @@ export const agentMailAuth = connect({
   instructions:
     "Authorize Vee's AgentMail organization and inbox. Vee must ask for confirmation immediately before creating or deleting mailboxes, sending, replying, forwarding, or sending drafts. Reading messages and creating or editing drafts is allowed without confirmation.",
 });
+
+export const agentMailAuthOptions = {
+  authKey: "agentmail",
+  displayName: "AgentMail",
+  connection: { url: AGENTMAIL_MCP_URL },
+} as const;
