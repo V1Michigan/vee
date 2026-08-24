@@ -21,7 +21,7 @@ const allowedTools = [
 export default defineMcpClientConnection({
   url: AGENTMAIL_MCP_URL,
   description:
-    "Vee's AgentMail inbox for reading, drafting, and sending email on behalf of V1 at Michigan. Use Vee's dedicated list_agentmail_inboxes tool to list inboxes. For list_messages and search_messages, omit every unused optional argument; never send empty strings or empty arrays for before, after, pageToken, labels, from, to, or subject.",
+    "Vee's AgentMail inbox for reading, drafting, and sending email on behalf of V1 at Michigan. Use Vee's dedicated list_agentmail_inboxes tool to list inboxes, and the dedicated list_agentmail_messages and search_agentmail_messages tools to read or search messages. The connection's get_thread tool takes an inbox ID and thread ID for full threads.",
   tools: { allow: allowedTools },
   auth: agentMailAuth,
 });

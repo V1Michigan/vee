@@ -31,6 +31,9 @@
 
 ### Fixed
 
+- Add sanitizing `list_agentmail_messages` and `search_agentmail_messages`
+  tools that strip empty optional filters before calling AgentMail, fixing the
+  `Invalid Date` validation errors from the raw message tools.
 - Match the AgentMail connection to the attached `mcp.agentmail.to/vee`
   connector so Vee can resolve its shared organization authorization.
 - Use the AI SDK's runtime-aware OIDC authentication for AI Gateway reports
