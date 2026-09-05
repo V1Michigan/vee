@@ -4,6 +4,10 @@
 
 ### Added
 
+- Central shared-connection registry and administrator authorization/status commands.
+- Tests for requester-independent grants and non-interactive authorization failures.
+- README feature inventory, connection setup status, and proposed automation roadmap.
+
 - Shared GitHub MCP access for Vee to file issues and prepare draft pull
   requests against its own repository.
 - Guardrails that restrict Vee to `V1Michigan/vee`, require `vee/*` branches,
@@ -25,6 +29,11 @@
   calendar changes.
 
 ### Changed
+
+- Use non-interactive shared authentication for all MCP connections, retaining
+  existing Notion and AgentMail shared subjects and using GitHub app credentials.
+- Use designated V1 accounts for public Slack search, Calendar, and Granola
+  instead of asking individual Slack users to connect personal accounts.
 
 - Keep Vee on GPT-5.6 Luna while routing through AI Gateway's OpenAI provider
   instead of the team's Azure BYOK credential.
