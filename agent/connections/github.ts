@@ -1,4 +1,4 @@
-import { connect } from "@vercel/connect/eve";
+import { sharedAuth } from "../lib/shared-auth.js";
 import { defineMcpClientConnection } from "eve/connections";
 
 const allowedTools = [
@@ -25,24 +25,5 @@ export default defineMcpClientConnection({
   headers: {
     "X-MCP-Tools": allowedTools.join(","),
   },
-  auth: connect({
-    connector: "github/vee",
-    principalType: "user",
-    createSubject: () => ({
-      type: "user" as const,
-      id: "vee-shared-github-v1",
-    }),
-    tokenParams: {
-      authorizationDetails: [
-        {
-          type: "github_app_installation",
-          org: "V1Michigan",
-          repositories: ["vee", "website-v2"],
-        },
-      ],
-    },
-    validate: true,
-    instructions:
-      "Authorize Vee for only the V1Michigan/vee and V1Michigan/website-v2 repositories using the shared V1 GitHub team account.",
-  }),
+  auth: sharedAuth("github"),
 });

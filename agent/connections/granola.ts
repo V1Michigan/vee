@@ -1,15 +1,9 @@
-import { connect } from "@vercel/connect/eve";
+import { sharedAuth } from "../lib/shared-auth.js";
 import { defineMcpClientConnection } from "eve/connections";
 
 export default defineMcpClientConnection({
   url: "https://mcp.granola.ai/mcp",
   description:
-    "Search and read the current user's Granola meeting notes, summaries, folders, action items, and transcripts.",
-  auth: connect({
-    connector: "mcp.granola.ai/granola",
-    principalType: "user",
-    validate: true,
-    instructions:
-      "Authorize Vee with your Granola account. Granola controls access using your active workspace and note permissions.",
-  }),
+    "Search and read meeting notes shared with Vee's designated V1 Granola account. Personal meeting notes are not connected.",
+  auth: sharedAuth("granola"),
 });

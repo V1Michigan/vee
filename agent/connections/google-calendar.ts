@@ -1,4 +1,4 @@
-import { connect } from "@vercel/connect/eve";
+import { sharedAuth } from "../lib/shared-auth.js";
 import { defineMcpClientConnection } from "eve/connections";
 
 const allowedTools = [
@@ -16,13 +16,7 @@ const allowedTools = [
 export default defineMcpClientConnection({
   url: "https://calendarmcp.googleapis.com/mcp/v1",
   description:
-    "Read the current user's Google Calendars, find events and availability, suggest meeting times, and—after confirmation—create, update, delete, or respond to calendar events.",
+    "Read V1's shared Google Calendars, find events and availability, suggest meeting times, and—after confirmation—create, update, delete, or respond to calendar events.",
   tools: { allow: allowedTools },
-  auth: connect({
-    connector: "calendarmcp.googleapis.com/google-calendar",
-    principalType: "user",
-    validate: true,
-    instructions:
-      "Authorize Vee with the Google account whose calendars you want it to access. Calendar access is per user and follows that account's Google Calendar permissions.",
-  }),
+  auth: sharedAuth("google-calendar"),
 });
