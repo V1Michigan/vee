@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { sharedAuth, sharedConnections } from "./shared-auth.ts";
 
-test("every connection uses the same grant for different requesters, without chat consent", async (t) => {
+test("organizational connections retain shared grants and Slack is excluded", async (t) => {
+  assert.equal(Object.hasOwn(sharedConnections, "slack-search"), false);
   t.mock.method(globalThis, "fetch", async (_url, options) => {
     requests.push(JSON.parse(options.body));
     return Response.json({ token: "test-only", expiresAt: Date.now() + 3_600_000 });
