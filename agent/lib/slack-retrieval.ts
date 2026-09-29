@@ -4,6 +4,7 @@ import { callMcpRead, mcpText } from "./provider-client.js";
 import { classifyFailure, ProviderFailure } from "./provider-errors.js";
 import { assertReadableChannel, slackCaller, type SlackAccess } from "./slack-policy.js";
 import { SLACK_MCP_URL, slackAuthOptions, slackPublicAuth, slackPrivateAuth, slackApiRead, verifySlackAccount } from "./slack-auth.js";
+import { privateSlackSession } from "./private-session.js";
 
 export type SlackSearchInput = {
   scope: SlackAccess; keywords?: string[]; filters?: string; question?: string;
@@ -52,6 +53,7 @@ export function slackResult(result: CallToolResult) {
 
 export async function retrieveSlack(input: SlackSearchInput | SlackReadInput, ctx: ToolContext) {
   const caller = slackCaller(ctx, input.scope);
+  if (input.scope === "private") privateSlackSession.update(() => true);
   // Validate and fix search scope before obtaining any credential.
   const args = "channelId" in input ? undefined : searchArguments(input);
   const auth = input.scope === "private" ? slackPrivateAuth : slackPublicAuth;

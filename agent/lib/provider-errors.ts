@@ -2,7 +2,7 @@ export type FailureCode =
   | "authorization_required" | "authorization_denied" | "wrong_account"
   | "missing_scope" | "provider_configuration" | "rate_limited"
   | "provider_unavailable" | "request_cancelled" | "invalid_request"
-  | "access_denied" | "provider_error" | "outcome_unknown";
+  | "access_denied" | "provider_error" | "outcome_unknown" | "write_journal_unavailable" | "connected_search_enabled" | "private_session_restricted";
 
 const messages: Record<FailureCode, string> = {
   authorization_required: "Authorization is missing, expired, or revoked. Connect this account again.",
@@ -17,6 +17,9 @@ const messages: Record<FailureCode, string> = {
   access_denied: "This requester or conversation is not permitted to perform this operation.",
   provider_error: "The provider returned an unexpected response. An administrator can investigate using the service and failure code.",
   outcome_unknown: "The write may have reached the provider, but its outcome is unknown. Check the destination before proposing another write. Vee did not retry it.",
+  write_journal_unavailable: "The durable write-attempt store is unavailable or unconfigured. No provider write was dispatched. A Vee administrator must check the action journal.",
+  connected_search_enabled: "Notion's shared MCP connection exposes connected-source AI search. An administrator must exclude notion-ai-search from that connection to keep Slack access per user. Direct Notion page reads remain available.",
+  private_session_restricted: "This conversation has requested private Slack context. Keep its results here. Start a separate conversation for other providers, external actions, or web requests.",
 };
 
 /** Safe to put in model results, logs, and diagnostic output. Never keeps a cause. */

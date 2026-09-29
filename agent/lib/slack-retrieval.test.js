@@ -5,6 +5,13 @@ import { retrieveSlack, searchArguments, slackResult } from "./slack-retrieval.t
 import { slackPublicAuth, slackPrivateAuth, publicSlackScopes, privateSlackScopes } from "./slack-auth.ts";
 import { classifyFailure, ProviderFailure } from "./provider-errors.ts";
 import { retryRead } from "./provider-client.ts";
+import { privateSlackSession } from "./private-session.ts";
+
+test.beforeEach((t) => {
+  let marked = false;
+  t.mock.method(privateSlackSession, "get", () => marked);
+  t.mock.method(privateSlackSession, "update", (fn) => { marked = fn(marked); });
+});
 
 function actor(user = "UA", surface = "shared", channel = surface === "dm" ? "DA" : "CA") {
   return { authenticator: "slack-webhook", principalType: "user", principalId: `slack:${TEAM}:${user}`, issuer: `slack:${TEAM}`,
