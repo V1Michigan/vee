@@ -11,10 +11,6 @@ export const sharedConnections = {
     connector: "github/vee", subject: { type: "app" },
     authorizationDetails: [{ type: "github_app_installation", org: "V1Michigan", repositories: ["vee", "website-v2"] }],
   },
-  "slack-search": {
-    connector: "slack/vee", subject: { type: "user", id: "vee-shared-slack-search-v1" },
-    scopes: ["search:read.public"],
-  },
   "google-calendar": { connector: "calendarmcp.googleapis.com/google-calendar", subject: { type: "user", id: "vee-shared-calendar-v1" } },
   granola: { connector: "mcp.granola.ai/granola", subject: { type: "user", id: "vee-shared-granola-v1" } },
 } satisfies Record<string, ConnectTokenParams & { connector: string }>;
