@@ -1,6 +1,7 @@
 import { connect } from "@vercel/connect/eve";
 import type { ConnectTokenParams } from "@vercel/connect";
 import { ConnectionAuthorizationFailedError } from "eve/connections";
+import { classifyFailure } from "./provider-errors.js";
 
 // These identities belong to Vee, never to the Slack requester. OAuth grants
 // are provisioned by an operator using scripts/connections.js, outside chat.
@@ -27,10 +28,12 @@ export function sharedAuth(name: SharedConnectionName) {
     createSubject: () => subject,
     tokenParams,
     validate: true,
-    onError: () => new ConnectionAuthorizationFailedError(name, {
-      reason: "shared_connection_unavailable",
-      retryable: false,
-      message: `Vee's shared ${name} connection is unavailable. A Vee administrator must check or reconnect it using pnpm connections:authorize ${name}. Individual Slack users do not need to sign in.`,
-    }),
+    onError(error) {
+      const failure = classifyFailure(error);
+      return new ConnectionAuthorizationFailedError(name, {
+        reason: failure.code, retryable: false,
+        message: `${failure.message} Vee's shared ${name} connection requires administrator attention. Run pnpm connections:check ${name}. Individual Slack users do not need to sign in.`,
+      });
+    },
   });
 }

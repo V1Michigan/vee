@@ -1,4 +1,4 @@
-// Match TypeScript's NodeNext .js imports to source .ts files in native Node tests.
+// Match TypeScript's NodeNext .js imports in native Node tests and operator scripts.
 // This hook never rewrites dependencies or resolves files outside agent/.
 import { registerHooks } from "node:module";
 import { existsSync } from "node:fs";

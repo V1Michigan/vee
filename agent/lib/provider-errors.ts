@@ -4,6 +4,12 @@ export type FailureCode =
   | "provider_unavailable" | "request_cancelled" | "invalid_request"
   | "access_denied" | "provider_error" | "outcome_unknown" | "write_journal_unavailable" | "connected_search_enabled" | "private_session_restricted";
 
+export const failureCodes = new Set<string>([
+  "authorization_required", "authorization_denied", "wrong_account", "missing_scope", "provider_configuration", "rate_limited",
+  "provider_unavailable", "request_cancelled", "invalid_request", "access_denied", "provider_error", "outcome_unknown",
+  "write_journal_unavailable", "connected_search_enabled", "private_session_restricted",
+]);
+
 const messages: Record<FailureCode, string> = {
   authorization_required: "Authorization is missing, expired, or revoked. Connect this account again.",
   authorization_denied: "Authorization was declined. No provider action was taken.",
@@ -36,14 +42,15 @@ export class ProviderFailure extends Error {
 
 export function classifyFailure(error: unknown): ProviderFailure {
   if (error instanceof ProviderFailure) return error;
-  const value = error as { code?: unknown; name?: unknown; message?: unknown; status?: unknown; statusCode?: unknown } | null;
+  const value = error as { code?: unknown; reason?: unknown; name?: unknown; message?: unknown; status?: unknown; statusCode?: unknown } | null;
+  for (const code of [value?.code, value?.reason]) if (typeof code === "string" && failureCodes.has(code)) return new ProviderFailure(code as FailureCode);
   // Inspect only to classify. Raw provider text can contain tokens and private records.
   const detail = [value?.code, value?.name, value?.message].filter((v) => typeof v === "string").join(" ").toLowerCase();
   const status = value?.status ?? value?.statusCode;
-  if (/not enabled for slack mcp|app.*not.*enabled|invalid_client|connector_not_found|not_installed|app_not_configured/.test(detail)) return new ProviderFailure("provider_configuration");
+  if (/not enabled for slack mcp|app.*not.*enabled|invalid_client|connector_not_found|connector.*(?:not found|not configured)|connector_installation_required|connectorinstallationrequired|not_installed|app_not_configured|oidc.*(?:missing|expired|refresh)|no.*oidc|project.*not.*linked/.test(detail)) return new ProviderFailure("provider_configuration");
   if (/missing_scope|insufficient_scope|not_allowed_token_type/.test(detail)) return new ProviderFailure("missing_scope");
   if (/authorization_denied|consent_denied|access_denied.*consent/.test(detail)) return new ProviderFailure("authorization_denied");
-  if (status === 401 || /unauthorized|invalid_auth|token_revoked|token_expired|not_authed|no_token|user_authorization_required/.test(detail)) return new ProviderFailure("authorization_required");
+  if (status === 401 || /unauthorized|invalid_auth|token_revoked|token_expired|not_authed|no_token|no_valid_token|novalidtoken|userauthorizationrequired|user_authorization_required/.test(detail)) return new ProviderFailure("authorization_required");
   if (status === 429 || /ratelimited|rate_limited|rate.limit/.test(detail)) return new ProviderFailure("rate_limited");
   if (status === 403 || /access_denied|channel_not_found|not_in_channel|restricted_action/.test(detail)) return new ProviderFailure("access_denied");
   if (/aborterror/.test(detail)) return new ProviderFailure("request_cancelled");

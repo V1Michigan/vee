@@ -1,6 +1,9 @@
 import { defineTool } from "eve/tools";
 import { gateway } from "ai";
 import { z } from "zod";
+import { retryRead } from "../lib/provider-client.js";
+import { classifyFailure } from "../lib/provider-errors.js";
+import { slackCaller } from "../lib/slack-policy.js";
 
 const usageSchema = z.object({
   period: z.enum([
@@ -118,18 +121,15 @@ async function fetchReport(
   datePart: "day" | "hour",
 ): Promise<RawReportRow[]> {
   try {
-    const report = await gateway.getSpendReport({
+    const report = await retryRead(() => gateway.getSpendReport({
       startDate,
       endDate,
       groupBy: "day",
       datePart,
-    });
+    }));
     return report.results;
   } catch (error) {
-    throw new Error(
-      "AI Gateway could not return the usage report. Confirm that Custom Reporting is available for the Vercel team and that this deployment belongs to that team.",
-      { cause: error },
-    );
+    throw classifyFailure(error);
   }
 }
 
@@ -139,6 +139,7 @@ export default defineTool({
   inputSchema: z.object({}),
   outputSchema,
   async execute(_input, ctx) {
+    slackCaller(ctx);
     const now = new Date();
     if (cache && cache.expiresAt > now.getTime()) {
       return cache.value;

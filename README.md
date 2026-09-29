@@ -1,202 +1,195 @@
 # Vee
 
-Vee is V1 at Michigan's internal Slack agent, built with the Eve framework and
-hosted on Vercel.
+Vee is V1 at Michigan's Slack assistant, built with Eve and hosted on Vercel.
+The first release uses per-user Slack authorization and guarded access to the
+team's other services. The model remains `openai/gpt-5.6-luna`, routed through
+AI Gateway to OpenAI.
 
-Vee responds to Slack mentions and direct messages, keeps durable conversation
-state within Slack threads, can use Eve's built-in tools, and connects to the
-V1 team's shared Notion workspace, public Slack history, Granola meeting notes,
-Google Calendar, and the Vee and website GitHub repositories through MCP. Its
-identity and behavior are defined in `agent/instructions.md`; model selection
-lives in `agent/agent.ts`; and the Slack channel is configured in
-`agent/channels/slack.ts`.
+The release is **implemented for a gated pilot**. It is not approved for broad
+rollout. Follow [the operator checklist](docs/rollout.md) before deployment and
+[the roadmap](ROADMAP.md) for subsequent increments.
 
-Vee uses `openai/gpt-5.6-luna` through AI Gateway, with routing restricted to
-the OpenAI provider. This bypasses the team's Azure BYOK credential and uses AI
-Gateway's Vercel-managed system credentials.
+## Access model
 
-Vee is retrieval-first for factual answers. It must verify claims with at least
-one relevant source: Notion at minimum for V1 facts, Granola for meetings, Slack
-for team discussions and recent operational context, GitHub for repository
-questions, and web search for external facts. It names its sources and states
-when retrieval cannot verify an answer instead of guessing.
+| Source | Credential | Permitted use |
+| --- | --- | --- |
+| Public Slack channels | Current requester's OAuth grant | Shared conversations and the requester's DM |
+| Private Slack channels | Requester's explicit additional consent | Only that requester's DM session with Vee |
+| Personal and group DM history | Not requested | No search or channel/thread retrieval |
+| Notion, Granola, Calendar, AgentMail | Existing designated V1 accounts | Team data those accounts are permitted to share |
+| GitHub | Existing V1 app installation | Only V1Michigan/vee and V1Michigan/website-v2 |
 
-GitHub access is restricted to `V1Michigan/vee` (Vee's own code) and
-`V1Michigan/website-v2` (V1 at Michigan's website), including filing issues and
-creating changes on `vee/*` branches for draft pull requests. Vee may suggest
-filing self-feedback in `V1Michigan/vee`; it files website improvement issues
-only when explicitly requested. Vee is instructed never to push to `main`,
-merge its own pull requests, alter repository settings, manage secrets, run
-workflows, or publish releases. GitHub branch protection is the enforcement
-boundary for `main`.
+Slack messages and interactive continuations retain their verified user and
+workspace identity. Each Slack retrieval checks the connected account against
+that identity. Public conversations cannot use private search, even if their
+requester has a private grant. Channel/thread reads check visibility before
+retrieving messages. Slack MCP is used for retrieval. Ordinary replies use
+Vee's existing bot identity.
 
-## Current features
+Private results remain in the current DM session. Once private access is
+requested, that session cannot query other providers, fetch public URLs, or
+perform external actions. Start a separate conversation for those tasks.
+There is no delegation or cross-session memory. Vee's current conversation
+with the user is still conversation context, not a searchable personal inbox.
 
-These capabilities are implemented in the code. Connected services require the
-shared credentials below; this list is not a claim that every integration is
-currently authorized or deployed.
+The old shared Slack grant is retained remotely for operator recovery.
+Runtime code never requests it and never falls back to it after a user's
+authorization fails. Shared credentials for the other services are unchanged.
 
-- **Slack assistant:** responds to mentions and direct messages, with conversation
-  context retained within Slack threads.
-- **Source-backed answers:** searches relevant sources, cites or names evidence,
-  and explains when a claim cannot be verified.
-- **Notion:** searches, reads, creates, and updates V1 team documentation.
-- **Public Slack search:** retrieves discussions and decisions from public
-  channels using the designated V1 account. No private-channel or DM search.
-- **Meeting context:** searches Granola notes, summaries, action items, and
-  transcripts accessible to Vee's designated account.
-- **Team calendar:** finds events and availability, suggests meeting times, and
-  can create, update, delete, or respond to events after confirmation of the
-  exact event details. It does not connect each person's private calendar.
-- **AgentMail:** lists Vee's inboxes, reads/searches messages and threads, and
-  creates or edits drafts. Creating inboxes, sending, replying, forwarding, and
-  sending drafts require confirmation under Vee's instructions. AgentMail does
-  not automatically contain V1's existing Gmail or listserv history.
-- **GitHub:** reads the Vee and website repositories, searches/files issues,
-  prepares changes on `vee/*` branches, and opens draft pull requests. Branch
-  and approval rules are agent instructions; repository permissions and branch
-  protection provide enforcement.
-- **AI cost reporting:** reports team-wide AI Gateway requests, tokens, Vercel
-  charges, and provider list-price usage for four time windows. This is not a
-  Vee-only bill or a remaining-credit balance.
-- **Centralized connections:** reuses V1 credentials across Slack users, with
-  administrator-only setup commands and no personal OAuth prompts in chat.
-  Missing credentials produce a setup error instead of a sign-in loop.
+## Retrieval
 
-### Connection status checked September 5, 2026
+Vee selects sources based on the question. Slack owns discussions and integration
+messages, Notion owns documentation, Granola owns meeting notes, Calendar owns
+scheduling, and GitHub owns repository records. Notion is no longer mandatory
+for every factual answer.
 
-- **AgentMail:** shared credential available; a live read-only inbox listing
-  succeeded after administrator consent.
-- **GitHub:** shared app credential available; repository tool access still
-  needs a downstream check.
-- **Notion, public Slack search, Granola:** shared authorization still required.
-- **Google Calendar:** configured in code, but its connector was not found in
-  the linked Vercel project and must be provisioned.
+- `search_slack` uses focused keywords and filters, includes bots such as Tally,
+  returns source permalinks, and exposes pagination.
+- `read_slack` follows relevant channels or threads with access checks.
+- `reconnect_slack` starts a fresh personal sign-in after an account mismatch or
+  a request to reconnect. A resumed call verifies the account.
+- `find_team_tools` discovers only locally allowed service tools and their
+  current schemas. `read_team_data` executes their allowed read operations.
+- `list_agentmail_inboxes` returns one page of up to 10 inboxes and reports a
+  next-page token when present.
 
-Run `pnpm connections:check` for current credential status. A browser login to
-Notion or AgentMail alone does not authorize Vee; the Vercel Connect consent
-flow must complete. Production status depends on deployment and verification.
+Results are bounded before entering durable history. Search output is labelled
+as a retrieved subset. Vee must cite source links and explain pagination,
+truncation, inaccessible records, and conflicting evidence. A search result is
+not proof that it found every record.
 
-## Upcoming features
+Notion's shared connection must exclude `notion-ai-search` server-side. Its
+ordinary search can otherwise include connected Slack sources. The guard
+refuses that configuration before retrieval. Direct Notion page reads remain
+available. See [Notion's search routing documentation](https://developers.notion.com/guides/mcp/mcp-supported-tools).
 
-Proposed priorities based on V1's operating workflows. These are not implemented
-and are not commitments to release dates. Existing tools can help draft parts
-of these workflows, but Vee has no dedicated end-to-end automation for them yet.
+## Actions and reliability
 
-1. **Finish shared-service setup:** connect the remaining services, verify
-   retrieval from two Slack users, and add connection health reporting.
-2. **Meeting and Slack commitments to Linear:** propose tasks with owners,
-   dates, and source links; check for duplicates; create approved tickets in
-   existing projects and cycles. Requires a Linear integration.
-3. **Event readiness checks:** compare confirmed event details against the
-   Ship-It runbook, flag missing owners/assets/links, and prepare event copy.
-   Add scoped Luma, Tally, Pitch, and Retool actions after the read-only pilot.
-4. **Onboarding checklists:** instantiate existing Notion templates with a buddy,
-   role-specific resources, and Day 1/3/5/7/14 milestones.
-5. **Reimbursement triage:** check required fields and receipts, flag possible
-   duplicates, and prepare a private review queue. Approval and payment stay
-   with authorized people.
-6. **Marketing preparation:** draft channel-specific copy, validate links and
-   UTM parameters, and check readiness against the existing content calendar.
-   Publishing requires approval and additional integrations.
-7. **Startup Week follow-through:** track company owners and next actions,
-   draft outreach, and check deliverables using the existing CRM. Real email
-   history requires verified mailbox routing or an additional connection.
-8. **Opt-in reminders and ops digests:** surface overdue commitments and
-   approaching deadlines, with owners, stop conditions, and duplicate prevention.
-   No dedicated scheduled ops workflows are configured today.
-9. **Cost and reliability controls:** measure cost per completed workflow,
-   evaluate model quality on real tasks, and route harder requests to a stronger
-   model only when useful. No automatic model routing or per-workflow budget
-   enforcement exists yet.
+All organizational mutations use `execute_team_action`. The original requester
+reviews the complete tool arguments in Slack. Approval is bound to that person,
+conversation, tool call, and argument digest. Another user's approval or changed
+arguments cannot execute the call. Preparing AgentMail drafts is the only
+approval exception. Sending drafts still requires approval.
 
-## Development
+GitHub restrictions are enforced in code: allowlisted repositories, `vee/*`
+write branches created from `main`, issue creation, and draft pull requests
+targeting `main`. No direct pushes to `main`, merges, repository administration,
+secrets, workflow dispatch, or releases are exposed.
 
-```bash
+Eve can replay a tool step after a process crash. Before a write, Vee atomically
+claims a durable attempt key in a Redis REST store. A replay cannot claim it
+again. An unknown outcome requires checking the destination and a new approved
+proposal. This prevents repeated dispatch of the same call; it does not promise
+that every approved action succeeds.
+
+Configure `VEE_ACTION_REDIS_REST_URL` and `VEE_ACTION_REDIS_REST_TOKEN` for a
+durable store supporting atomic `SET ... NX`. Keep eviction disabled and do not
+expire attempt keys while sessions can resume. Missing storage blocks writes,
+including draft creation. Reads continue to work. The store contains only hashed
+call identifiers and argument digests, never tokens or source content.
+
+Transient reads retry at most three times, using bounded backoff and
+`Retry-After`. Provider writes have no automatic retries. Authorization,
+account mismatch, missing scopes, configuration errors, rate limits, outages,
+and uncertain write outcomes use distinct safe failure codes.
+
+Unrestricted shell execution, child agents, and public web tools are disabled
+because they bypass the access and action guards. The framework's generic URL
+fetcher also follows redirects from server-side requests. Repository work uses
+guarded GitHub tools. A future web adapter must enforce permitted destinations
+and private-session boundaries before these tools return.
+
+## Diagnostics and setup
+
+Use Node 24 or newer and the pinned pnpm version.
+
+~~~bash
 pnpm install
-pnpm dev
-```
-
-## Verification
-
-```bash
 pnpm test
 pnpm typecheck
 pnpm build
-```
-
-Deploy with Eve after linking the project and provisioning the Slack connector:
-
-```bash
-vercel link
-vercel env pull
-pnpm exec eve deploy
-```
-
-## Shared connections
-
-All MCP connections use centrally managed credentials. Slack users are never
-asked to connect a personal account. Missing or revoked credentials fail with
-an administrator setup message; they do not start a consent flow in Slack.
-
-GitHub uses the app installation limited to V1Michigan/vee and website-v2.
-Notion and AgentMail retain their existing fixed shared OAuth identities.
-Slack search, Calendar, and Granola now use designated V1 OAuth identities.
-These remain standard provider OAuth grants, but an administrator provisions
-them outside chat. This does not turn user-only provider APIs into app APIs.
-
-With the Vee project linked and fresh local Vercel credentials:
-
-```bash
 pnpm connections:check
-pnpm connections:authorize agentmail
+pnpm connections:check slack-search --slack-user U0123456789
+~~~
+
+The diagnostic command distinguishes credential availability, identity checks,
+MCP initialization, and successful retrieval. It prints safe status codes,
+never tokens or retrieved records. A successful retrieval can have zero matches.
+Checks make read-only provider calls and consume no model tokens.
+
+Slack authorization happens interactively in Vee. The administrator command
+`pnpm connections:authorize slack-search` is retired. Every participant consents
+with their own V1 Slack account. Private-channel consent is requested only from
+that person's DM.
+
+Organizational credentials remain administrator-provisioned:
+
+~~~bash
 pnpm connections:authorize notion
-pnpm connections:authorize slack-search
-pnpm connections:authorize google-calendar
 pnpm connections:authorize granola
-```
+pnpm connections:authorize google-calendar
+pnpm connections:authorize agentmail
+~~~
 
-Each authorize command prints a short-lived consent link. Complete it using the
-designated V1 account, then run the check again. The commands never print tokens.
-An existing shared Notion or AgentMail grant is reused; previous personal Slack,
-Calendar, and Granola grants are not reused. GitHub app setup is done in Vercel
-Connect. A successful credential check does not verify downstream tool access.
-After provisioning, build/deploy and test read-only retrieval in each service
-from two different Slack users; neither should see a sign-in link.
+Only use designated accounts whose accessible records can be shared with Vee's
+users. GitHub uses its existing app installation. Calendar's connector and
+Google APIs must be configured before authorization. Granola includes the
+designated account's accessible notes, not every member's personal notes.
+See [the setup and migration checklist](docs/rollout.md).
 
-Only connect accounts whose accessible data can be shared with Vee's users.
-Provider permissions are the access boundary: restrict Notion pages, Calendar
-sharing, AgentMail organization membership, and Granola notes accordingly.
-Slack search requests only search:read.public and requires a designated user
-OAuth grant; the Slack channel bot credential cannot replace it. Calendar now
-means V1's team schedule, not each requester's personal schedule. Granola MCP
-still authenticates a designated account; it is not the Granola workspace API
-and does not automatically include every member's notes. Leave it unprovisioned
-until an appropriate team account is available, or use shared notes in Notion.
+## Pilot gate
 
-The Calendar connector must first be provisioned in Vercel Connect with Google's
-Calendar API and Calendar MCP API enabled. Shared credentials must be installed
-before deployment to avoid losing access during migration. Confirmation rules
-for sending mail and modifying events still apply. Requesters retain their Slack
-identity; sharing credentials does not grant them administrator privileges.
+`VEE_SLACK_ROLLOUT` defaults to `pilot`. Set `VEE_SLACK_PILOT_USERS` to the two
+verified Slack user IDs. An empty list admits nobody. The inbound channel and
+tool execution both enforce the gate.
 
-## AI Gateway usage reporting
+Set `VEE_SLACK_ROLLOUT=enabled` only after the complete validation checklist
+passes. Set `disabled` to stop new inbound work and provider tool calls. Cancel
+pending workflows before changing or rolling back a live deployment.
 
-Vee's `check_ai_gateway_usage` tool uses Vercel's Custom Reporting API to show
-team-wide AI Gateway activity for all time, the past 30 days, the past 7 days,
-and the past 24 hours. Each period includes request volume, token usage, the
-amount charged through Vercel, and market-price usage across both system and
-BYOK credentials.
+Live read-only checks from this checkout on September 29, 2026 found:
 
-On Vercel, the tool uses the automatically provided `VERCEL_OIDC_TOKEN`. For
-local development, add a team AI Gateway key:
+| Service | Result |
+| --- | --- |
+| GitHub | Credential, MCP initialization, and README retrieval succeeded |
+| Notion, Granola, AgentMail | Connect required authorization for the existing shared subjects |
+| Google Calendar | Connector not found |
+| Slack for U092NE8JNHG | Per-user authorization required |
+| Action journal | No local credentials configured |
 
-```bash
-AI_GATEWAY_API_KEY=
-```
+These are environment-specific observations, not production verification.
+No grants were changed or revoked by the checks.
 
-Custom Reporting currently requires a Pro or Enterprise Vercel team. Reports
-can lag by several minutes. The tool caches results for five minutes and makes
-two reporting queries when the cache is cold. Set
-`AI_GATEWAY_USAGE_START_DATE=YYYY-MM-DD` only if the default all-time starting
-date of `2020-01-01` needs to be changed.
+## Cost and observability
+
+No automatic pre-search, background summarization, indexing, scheduled model
+calls, or model changes are introduced. OAuth and provider checks are API calls,
+not model calls. Focused retrieval and removal of mandatory Notion searches can
+reduce context. Discovery and thread follow-ups can add model steps, so actual
+cost depends on the task.
+
+Eve hooks emit one structured `vee.turn` record per terminal turn with token
+usage, available cost, latency, tool failures/rejections, and completion status.
+Unknown usage is `null`, not zero. Latency includes approval and OAuth waiting.
+A completed turn means Eve finished responding, not that a business workflow
+succeeded. Logs use hashed turn identifiers and omit user IDs, queries, tool
+arguments, source content, and credentials. Model input/output telemetry is
+disabled. Authorized Eve session history still contains the conversation.
+
+`check_ai_gateway_usage` remains an on-demand team-wide report for all time,
+30 days, 7 days, and 24 hours. It includes system and BYOK requests.
+`totalCostUsd` is Vercel-charged cost; `marketCostUsd` is provider list-price
+usage. Neither is a remaining credit balance or a Vee-only bill. Reports cache
+for five minutes and can lag. Local access can use `AI_GATEWAY_API_KEY`.
+`AI_GATEWAY_USAGE_START_DATE` defaults to `2020-01-01`.
+
+## Local development
+
+~~~bash
+pnpm dev
+~~~
+
+Link the intended Vercel project and obtain fresh local environment credentials
+before provider checks. Deploy the complete PR stack only with pilot settings
+and the operator prerequisites in place. Do not infer a successful deployment
+or OAuth pilot from local test results.

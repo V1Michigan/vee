@@ -17,6 +17,9 @@ function context(user = "UA", callId = "call-1") {
 const issue = { service: "github", tool: "issue_write", arguments: { owner: "V1Michigan", repo: "vee", method: "create", title: "Test", body: "Proposed issue." } };
 
 test.beforeEach((t) => {
+  const oldRollout = process.env.VEE_SLACK_ROLLOUT;
+  process.env.VEE_SLACK_ROLLOUT = "enabled";
+  t.after(() => { if (oldRollout === undefined) delete process.env.VEE_SLACK_ROLLOUT; else process.env.VEE_SLACK_ROLLOUT = oldRollout; });
   let bindings = {};
   let privateContext = false;
   t.mock.method(actionApprovals, "get", () => bindings);

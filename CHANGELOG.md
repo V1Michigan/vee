@@ -4,52 +4,50 @@
 
 ### Added
 
-- Central shared-connection registry and administrator authorization/status commands.
-- Tests for requester-independent grants and non-interactive authorization failures.
-- README feature inventory, connection setup status, and proposed automation roadmap.
-
-- Shared GitHub MCP access for Vee to file issues and prepare draft pull
-  requests against its own repository.
-- Guardrails that restrict Vee to `V1Michigan/vee`, require `vee/*` branches,
-  and prohibit direct changes to `main`, self-merges, settings, secrets,
-  workflows, and releases.
-- Per-user search across public Slack channels using Slack's official MCP
-  server and the `search:read.public` scope.
-- Per-user Granola access for meeting notes, summaries, action items, and
-  transcripts through Granola's official MCP server.
-- Notion-first guidance for general V1 questions, with multi-source synthesis
-  across Notion, Slack, and Granola when useful.
-- A read-only, BYOK-aware tool for reporting team-wide Vercel AI Gateway
-  requests, token usage, and costs across four time windows.
-- Retrieval-first answer guidance requiring source verification, including
-  Notion for V1 facts, Granola for meetings, Slack for team context, GitHub for
-  repository questions, and web search for external information.
-- Per-user Google Calendar access through Google's official MCP server for
-  schedules, events, availability, meeting suggestions, and confirmation-gated
-  calendar changes.
+- Per-user public Slack OAuth, verified requester/account matching, and optional
+  private-channel consent confined to the requester's DM session.
+- Guarded Slack search and channel/thread reads with integration messages,
+  source permalinks, pagination, and explicit incomplete-coverage labels.
+- Runtime service/tool allowlists and GitHub repository, branch, issue-create,
+  and draft-PR restrictions.
+- Exact-call approvals bound to the original requester, with complete Slack
+  review payloads and a durable Redis REST claim before each write attempt.
+- Read-only provider diagnostics that distinguish credential availability,
+  identity, MCP initialization, and successful retrieval.
+- Content-free per-turn token, latency, tool failure, and completion metrics.
+- A closed pilot gate, personal Slack reconnect flow, and operator rollout
+  checklist.
 
 ### Changed
 
-- Use non-interactive shared authentication for all MCP connections, retaining
-  existing Notion and AgentMail shared subjects and using GitHub app credentials.
-- Use designated V1 accounts for public Slack search, Calendar, and Granola
-  instead of asking individual Slack users to connect personal accounts.
-
-- Keep Vee on GPT-5.6 Luna while routing through AI Gateway's OpenAI provider
-  instead of the team's Azure BYOK credential.
+- Retire shared Slack authorization through the administrator script. Keep the
+  old grant remotely for recovery without a runtime fallback.
+- Keep existing organizational identities for Notion, Granola, Calendar, GitHub,
+  and AgentMail. Use guarded retrieval and actions in place of raw connections.
+- Select authoritative sources based on the question. Remove mandatory Notion
+  searches and automatic re-retrieval of evidence already relevant to the turn.
+- Keep private Slack context in its DM session and prevent exports through
+  other providers or external actions.
+- Disable unguarded shell, child-agent, and public web tools for this release.
+- Keep GPT-5.6 Luna and OpenAI-only AI Gateway routing.
 
 ### Fixed
 
-- Match the AgentMail connection to the attached `mcp.agentmail.to/vee`
-  connector so Vee can resolve its shared organization authorization.
-- Use the AI SDK's runtime-aware OIDC authentication for AI Gateway reports
-  instead of expecting a build-time token in the Function environment.
-- Match Vee's GitHub connection to the attached `github/vee` connector so its
-  shared repository authorization can be resolved at runtime.
-- Extend Vee's GitHub scope to `V1Michigan/website-v2` and distinguish
-  self-feedback from explicitly requested website issues.
-- Switch Vee from DeepSeek V4 Flash to GPT-5.6 Luna and restrict AI Gateway
-  routing to Azure so the team's Azure BYOK credential is preferred.
+- Preserve integration-generated Slack records such as Tally confirmations.
+- Bound transient read retries, honor Retry-After, and never automatically retry
+  a write with an uncertain outcome.
+- Prevent shared Notion search from bypassing Slack isolation via connected
+  sources.
+- Report safe, distinct failure codes instead of raw provider error details.
+- Avoid claiming a complete inbox inventory from AgentMail's first page.
+
+### Rollout requirements
+
+- Two V1 users must validate authorization, privacy, retrieval, and approvals.
+- The durable write-attempt store must be configured before mutations work.
+- Missing shared grants and Calendar configuration must be provisioned.
+- No background indexing, summarization, scheduled model work, reconciliation,
+  proactive reminders, or institutional memory is introduced.
 
 ## [0.0.1] - 2026-08-04
 
