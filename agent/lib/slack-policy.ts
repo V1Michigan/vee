@@ -5,6 +5,13 @@ export const V1_SLACK_TEAM_ID = "T02UZ8D4ZMY";
 export type SlackAccess = "public" | "private";
 export type SlackCaller = { teamId: string; userId: string; channelId: string; principalId: string; issuer: string; personalDm: boolean };
 
+export function slackRolloutAllows(userId: string): boolean {
+  const rollout = process.env.VEE_SLACK_ROLLOUT ?? "pilot";
+  if (rollout === "enabled") return true;
+  if (rollout !== "pilot") return false;
+  return (process.env.VEE_SLACK_PILOT_USERS ?? "").split(",").map((value) => value.trim()).filter(Boolean).includes(userId);
+}
+
 export function slackCaller(ctx: SessionContext, access: SlackAccess = "public"): SlackCaller {
   const current = ctx.session.auth.current;
   const first = ctx.session.auth.initiator;
@@ -20,13 +27,12 @@ export function slackCaller(ctx: SessionContext, access: SlackAccess = "public")
   }
   // Only the verified message.im handler adds this marker. Native approval
   // callbacks may omit it, so use the pinned DM owner on those continuations.
-  const personalDm = first?.attributes.vee_surface === "dm"
+  const personalDm = channelId.startsWith("D") && first?.attributes.vee_surface === "dm"
     && first.principalId === current.principalId
     && first.attributes.channel_id === channelId
     && first.attributes.team_id === teamId;
   if (access === "private" && !personalDm) throw new ProviderFailure("access_denied");
-  const pilot = process.env.VEE_SLACK_PILOT_USERS?.split(",").map((s) => s.trim()).filter(Boolean);
-  if (pilot?.length && !pilot.includes(userId!)) throw new ProviderFailure("access_denied");
+  if (!slackRolloutAllows(userId!)) throw new ProviderFailure("access_denied");
   return { teamId: teamId!, userId: userId!, channelId: channelId!, principalId: current.principalId, issuer: current.issuer!, personalDm };
 }
 

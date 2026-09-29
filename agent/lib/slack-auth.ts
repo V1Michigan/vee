@@ -1,5 +1,5 @@
 import { connect } from "@vercel/connect/eve";
-import { ConnectionAuthorizationFailedError } from "eve/connections";
+import { ConnectionAuthorizationFailedError, ConnectionAuthorizationRequiredError } from "eve/connections";
 import type { SlackAccess, SlackCaller } from "./slack-policy.js";
 import { classifyFailure, ProviderFailure } from "./provider-errors.js";
 import { providerFetch, retryRead } from "./provider-client.js";
@@ -18,10 +18,11 @@ export function slackAuth(access: SlackAccess) {
     instructions: access === "private"
       ? "Authorize Vee to search your private channels in this DM. Use your own account in V1 Team. Personal DM history is not requested."
       : "Authorize Slack search with your own account in V1 Team. This initially requests public-channel access only.",
-    onError(error) {
+    onError(error, phase) {
       const failure = classifyFailure(error);
-      // Let Connect's native missing/revoked-grant handling park and resume OAuth.
-      if (failure.code === "authorization_required") return undefined;
+      // Preserve Eve's interactive park/resume semantics without forwarding
+      // raw Connect messages into the durable stream or diagnostics.
+      if (failure.code === "authorization_required" && phase === "getToken") return new ConnectionAuthorizationRequiredError("slack-search", { message: failure.message });
       return new ConnectionAuthorizationFailedError("slack-search", {
         reason: failure.code, retryable: false, message: failure.message,
       });

@@ -8,6 +8,9 @@ import { retryRead } from "./provider-client.ts";
 import { privateSlackSession } from "./private-session.ts";
 
 test.beforeEach((t) => {
+  const oldRollout = process.env.VEE_SLACK_ROLLOUT;
+  process.env.VEE_SLACK_ROLLOUT = "enabled";
+  t.after(() => { if (oldRollout === undefined) delete process.env.VEE_SLACK_ROLLOUT; else process.env.VEE_SLACK_ROLLOUT = oldRollout; });
   let marked = false;
   t.mock.method(privateSlackSession, "get", () => marked);
   t.mock.method(privateSlackSession, "update", (fn) => { marked = fn(marked); });

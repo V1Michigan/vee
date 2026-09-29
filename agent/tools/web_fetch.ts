@@ -1,14 +1,6 @@
-import { defineTool } from "eve/tools";
-import { webFetch } from "eve/tools/defaults";
-import { assertNoPrivateSlackExport } from "../lib/private-session.js";
-import { slackCaller } from "../lib/slack-policy.js";
-import { classifyFailure } from "../lib/provider-errors.js";
+import { disableTool } from "eve/tools";
 
-export default defineTool({
-  ...webFetch,
-  async execute(input, ctx) {
-    slackCaller(ctx);
-    assertNoPrivateSlackExport();
-    try { return await webFetch.execute(input, ctx); } catch (error) { throw classifyFailure(error); }
-  },
-});
+// The framework fetcher makes arbitrary server-side requests and follows
+// redirects. Keep egress on fixed provider endpoints until a public-web adapter
+// can enforce destination and private-session boundaries through redirects.
+export default disableTool();

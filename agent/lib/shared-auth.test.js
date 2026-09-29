@@ -42,7 +42,7 @@ test("missing or revoked credentials fail without triggering a sign-in flow or e
     await assert.rejects(sharedAuth(name).getToken({ principal: { type: "app" }, connection: { url: "https://example.test/mcp" } }), (error) => {
       assert.equal(error.name, "ConnectionAuthorizationFailedError");
       assert.equal(error.retryable, false);
-      assert.equal(error.reason, "shared_connection_unavailable");
+      assert.equal(error.reason, "authorization_required");
       assert.match(error.message, /administrator/);
       assert.doesNotMatch(error.message, /secret-provider-detail/);
       return true;

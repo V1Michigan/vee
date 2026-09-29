@@ -9,8 +9,8 @@
     "start": "eve start",
     "test": "node --import ./scripts/test-loader.js --test agent/lib/*.test.js",
     "typecheck": "tsc",
-    "connections:check": "node --env-file-if-exists=.env.local scripts/connections.js check",
-    "connections:authorize": "node --env-file-if-exists=.env.local scripts/connections.js authorize"
+    "connections:check": "node --env-file-if-exists=.env.local --import ./scripts/test-loader.js scripts/connections.js check",
+    "connections:authorize": "node --env-file-if-exists=.env.local --import ./scripts/test-loader.js scripts/connections.js authorize"
   },
   "dependencies": {
     "@ai-sdk/mcp": "2.0.36",
