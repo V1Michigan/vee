@@ -82,3 +82,39 @@ no external calls, add no model calls, and install no scheduled workflows.
 Validate with conflicting event times, duplicate Tally links, two events for
 one company, an unspecified owner, a changed destination row, and a partially
 read task database. Verify existing schema and values survive approved updates.
+
+## Announcement drafts
+
+Ask **Draft a Slack announcement for this event** or explicitly request
+`v1-event-announcements`. The packaged skill adapts the team-authored work from
+[PR #14](https://github.com/V1Michigan/vee/pull/14), preserving channel-specific
+voice guidance in an on-demand reference. The older PR should not also be merged
+unchanged, because that would install a second copy with a conflicting identity.
+
+`validate_announcement` checks required fields, dates and weekdays, intended
+publication date, IANA timezone, DST gaps and repeated hours, overnight end
+dates, and V1 tracking links. Use 24-hour times and explicit years. The clock is
+read locally. Ambiguous times require an explicit UTC offset. Existing tracking
+and URL fragments survive; external links are left unchanged. Historical style
+examples are never current event evidence. Drafting does not publish or schedule.
+
+Try a wrong weekday, a missing location, an overnight event, and a post scheduled
+for a different day from drafting. Check that unresolved details are flagged,
+the team voice fits the selected channel, and no messages are sent elsewhere.
+
+## Why this scope
+
+The selected tools follow observed requests in V1's public Slack channels:
+[trace visibility](https://v1michigan.slack.com/archives/C09BXNH1PL0/p1786333014054279),
+[connection status](https://v1michigan.slack.com/archives/C0BRLL1ELT1/p1790647443199159),
+[event reconciliation](https://v1michigan.slack.com/archives/C0BRLL1ELT1/p1789413878368239),
+[task updates](https://v1michigan.slack.com/archives/C033MBHJNR5/p1789661860103209),
+and [announcement drafting](https://v1michigan.slack.com/archives/C0BRLL1ELT1/p1789937189295089).
+This is a targeted sample, not a census of team needs.
+
+Stripe payment links, reminders, surveys, attachment ingestion and institutional
+memory are separate increments. The current stack adds no payment connector,
+scheduled model work, indexing or automatic pre-search. Computation tools make
+no network calls. Skills add context only when loaded, and normal retrieval and
+drafting still consume the current model's tokens. Measure those costs in the
+existing turn metrics instead of assuming zero cost for an entire workflow.

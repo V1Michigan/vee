@@ -24,10 +24,17 @@ or the live approval matrix.
 
 ## Subsequent increments
 
-1. Reconcile Startup Week records against authoritative form/CRM data, including
-   duplicates, pagination, and source attribution.
-2. Add dedicated task-creation workflows with owners, dates, duplicate checks,
-   destination constraints, and explicit approval.
+The [team-tool extension](docs/team-tools.md) implements safe conversation traces,
+connection checks, sourced record comparisons, task proposals and announcement
+drafting. Skills retrieve on demand; comparison tools operate on extracted
+candidates. Live model routing and the source-to-approved-write workflow still
+need pilot validation. The announcement diff adapts PR #14; do not also merge
+its older flat skill unchanged.
+
+1. Connect authoritative form/payment data for complete Startup Week
+   reconciliation. Candidate comparisons alone do not establish completeness.
+2. Validate the task proposal workflow with live Notion schemas, pagination,
+   owner identities, changed rows, and exact approvals.
 3. Add opt-in reminders with stop conditions and duplicate prevention.
 4. Design institutional memory with source permissions, retention, correction,
    and deletion rules before implementing it.
@@ -36,4 +43,4 @@ or the live approval matrix.
    preserve destination, private-session, and action boundaries.
 
 There is no background summarization, indexing, automatic pre-search, scheduled
-model work, dedicated reconciliation, or institutional memory in this release.
+model work, payment connector, or institutional memory in this release.
