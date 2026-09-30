@@ -59,3 +59,26 @@ probe other providers after requesting private context. The journal report
 checks environment presence only, labels connectivity as untested, and never
 claims or deletes a write-attempt key. Provider checks add network calls only
 when requested. They do not add model calls, polling, or scheduled work.
+
+## Event briefs and task proposals
+
+- **Reconcile Startup Week's calendar with the confirmations in Slack.** The
+  `event-brief` skill retrieves relevant sources on demand and uses
+  `reconcile_records` to group exact entity keys, deduplicate repeated source
+  links, and expose conflicting or missing fields. Separate events and years
+  remain separate. No source wins merely because its message is newer.
+- **Turn this meeting's action items into updates for this Notion task DB.**
+  The `meeting-actions` skill reads the destination and uses `plan_team_tasks`
+  to compare exact titles, preserve unspecified fields, show proposed changes,
+  and flag missing owners/dates and ambiguous matches. Existing action approval
+  and the durable write journal still control every actual update.
+
+Both computation tools operate on extracted candidates. Their output is not
+independent evidence that the extraction is correct. They cannot prove full
+source coverage or absence of similarly named duplicates. Every proposal
+requires source review and a fresh destination check before writes. They make
+no external calls, add no model calls, and install no scheduled workflows.
+
+Validate with conflicting event times, duplicate Tally links, two events for
+one company, an unspecified owner, a changed destination row, and a partially
+read task database. Verify existing schema and values survive approved updates.
