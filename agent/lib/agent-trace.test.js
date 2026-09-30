@@ -39,6 +39,16 @@ test("trace replay is idempotent and storage remains bounded with terminal outco
   assert.equal(state.length, MAX_TRACE_TURNS);
 });
 
+test("Eve's constant per-turn sequence preserves every distinct model step", () => {
+  let state = [];
+  for (let stepIndex = 0; stepIndex < 3; stepIndex++) {
+    for (const type of ["step.started", "step.completed"]) state = reduceAgentTraces(state, event(type, { stepIndex }, 0), "s", 0);
+  }
+  assert.equal(state[0].entries.length, 6);
+  state = reduceAgentTraces(state, event("step.completed", { stepIndex: 2 }, 0), "s", 0);
+  assert.equal(state[0].entries.length, 6);
+});
+
 test("trace never echoes unknown tool names or arbitrary dashboard destinations", () => {
   const entries = traceEntries(event("actions.requested", { actions: [{ kind: "tool-call", callId: "c", toolName: "private-content", input: {} }] }), 0);
   assert.equal(entries[0].tool, "other");

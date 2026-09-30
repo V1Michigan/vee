@@ -27,14 +27,14 @@ export function traceEntries(event: Event, now: number): TraceEntry[] {
   const base = { at, ...("stepIndex" in event.data ? { step: event.data.stepIndex } : {}) };
   const sequence = event.data.sequence;
   const entry = (extra: Partial<TraceEntry> = {}, suffix = ""): TraceEntry => ({
-    ...base, key: hash(`${event.type}/${sequence}/${suffix}`), event: event.type, ...extra,
+    ...base, key: hash(`${event.type}/${sequence}/${base.step ?? "turn"}/${suffix}`), event: event.type, ...extra,
   });
   switch (event.type) {
     case "turn.started": case "step.started": case "turn.completed": case "turn.cancelled":
       return [entry()];
     case "turn.failed": case "step.failed": return [entry({ failure: failureCode(event.data) })];
     case "authorization.required": return [entry({ status: "waiting_for_authorization" })];
-    case "authorization.completed": return [entry({ status: event.data.outcome })];
+    case "authorization.completed": return [entry({ status: event.data.outcome }, event.data.outcome)];
     case "input.requested": return [entry({ status: "waiting_for_input" })];
     case "step.completed": {
       const usage: Partial<TraceEntry> = {};
