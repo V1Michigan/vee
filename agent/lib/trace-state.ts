@@ -12,6 +12,6 @@ export function inspectAgentRun(ctx: SessionContext, turnKey?: string) {
   return {
     scope: "current_conversation", traces: turnKey ? traces.filter((trace) => trace.turnKey === turnKey) : traces.slice(-3),
     viewer: traceViewerUrl(),
-    note: "Operational trace only. Contains no messages, prompts, reasoning, tool arguments, results, credentials, or raw errors. Times include approval/authorization waits. Active turns are incomplete. At most 6 recent turns and 200 entries per turn are retained. The optional Vercel viewer requires project access and has its own retention and content controls.",
+    note: "Operational trace only. Contains no messages, prompts, reasoning, tool arguments, results, credentials, or raw errors. Routing records the model selected by Vee; Eve 0.24.6 does not report the provider-served model here. Times include approval/authorization waits. Active turns are incomplete. At most 6 recent turns and 200 entries per turn are retained. The optional Vercel viewer requires project access and has its own retention and content controls.",
   };
 }

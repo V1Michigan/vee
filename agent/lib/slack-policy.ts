@@ -12,7 +12,7 @@ export function slackRolloutAllows(userId: string): boolean {
   return (process.env.VEE_SLACK_PILOT_USERS ?? "").split(",").map((value) => value.trim()).filter(Boolean).includes(userId);
 }
 
-export function slackCaller(ctx: SessionContext, access: SlackAccess = "public"): SlackCaller {
+export function slackCaller(ctx: { readonly session: Pick<SessionContext["session"], "auth"> }, access: SlackAccess = "public"): SlackCaller {
   const current = ctx.session.auth.current;
   const first = ctx.session.auth.initiator;
   const teamId = current?.attributes.team_id;

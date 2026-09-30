@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { StreamEventHooks } from "eve/hooks";
 import { failureCodes } from "./provider-errors.js";
+import { safeModelRoute, type ModelRoute } from "./model-routing.js";
 
 type Event = Parameters<NonNullable<StreamEventHooks["*"]>>[0];
 type Usage = { inputTokens?: number; outputTokens?: number; cacheReadTokens?: number; cacheWriteTokens?: number; costUsd?: number };
@@ -9,6 +10,7 @@ export type TurnMetrics = {
   turnId: string; startedAt: number; endedAt?: number; outcome?: "completed" | "failed" | "cancelled";
   stepStarts: Record<string, number>; steps: Record<string, { usage: Usage; durationMs: number | null }>;
   tools: Record<string, ToolMetric>; failureCode?: string;
+  routing?: ModelRoute;
 };
 
 const safeTools = new Set(["search_slack", "read_slack", "reconnect_slack", "find_team_tools", "read_team_data", "execute_team_action", "list_agentmail_inboxes", "check_ai_gateway_usage", "inspect_agent_run", "check_connections", "reconcile_records", "plan_team_tasks", "validate_announcement", "web_fetch", "read_file", "write_file", "glob", "grep", "todo", "ask_question"]);
@@ -22,10 +24,12 @@ export function failureCode(error?: { code?: string; message?: string }): string
 }
 
 /** Only counters, timings, and an allowlisted failure code survive this reducer. */
-export function reduceTurnMetrics(previous: TurnMetrics | null, event: Event, now: number): TurnMetrics | null {
+export function reduceTurnMetrics(previous: TurnMetrics | null, event: Event, now: number, route?: ModelRoute | null): TurnMetrics | null {
   if (!("data" in event) || !("turnId" in event.data)) return previous;
   const state: TurnMetrics = previous && previous.turnId === event.data.turnId ? structuredClone(previous)
     : { turnId: event.data.turnId, startedAt: now, stepStarts: {}, steps: {}, tools: {} };
+  const routing = safeModelRoute(route);
+  if (!state.routing && routing) state.routing = routing;
   if (event.type === "step.started") state.stepStarts[event.data.stepIndex] ??= now;
   if (event.type === "step.completed") {
     const start = state.stepStarts[event.data.stepIndex];
@@ -61,14 +65,16 @@ export function reduceTurnMetrics(previous: TurnMetrics | null, event: Event, no
 }
 
 export function turnMetricsReport(state: TurnMetrics, sessionId: string) {
+  const routing = safeModelRoute(state.routing);
   const steps = Object.values(state.steps);
   const tools = Object.values(state.tools);
   const sum = (key: keyof Usage) => steps.length && steps.every((step) => step.usage[key] !== undefined)
     ? steps.reduce((total, step) => total + step.usage[key]!, 0) : null;
   return {
-    event: "vee.turn", schemaVersion: 1,
+    event: "vee.turn", schemaVersion: 2,
     turnKey: createHash("sha256").update(`${sessionId}/${state.turnId}`).digest("hex").slice(0, 24),
-    model: "openai/gpt-5.6-luna", outcome: state.outcome ?? "active",
+    model: routing?.model ?? null, modelAttribution: routing ? "selected" : "unknown", routing,
+    outcome: state.outcome ?? "active",
     latencyMs: state.endedAt === undefined ? null : Math.max(0, state.endedAt - state.startedAt),
     modelCalls: steps.length, inputTokens: sum("inputTokens"), outputTokens: sum("outputTokens"),
     cacheReadTokens: sum("cacheReadTokens"), cacheWriteTokens: sum("cacheWriteTokens"), costUsd: sum("costUsd"),

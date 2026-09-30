@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { reduceAgentTraces, traceEntries, traceViewerUrl, MAX_TRACE_ENTRIES, MAX_TRACE_TURNS } from "./agent-trace.ts";
 import { agentTraces, inspectAgentRun } from "./trace-state.ts";
+import { chooseModelRoute, snapshotModelRoute } from "./model-routing.ts";
 
 const event = (type, data = {}, sequence = 0) => ({ type, data: { turnId: "t1", sequence, ...data }, meta: { at: "2026-09-29T12:00:00Z" } });
 
@@ -66,4 +67,17 @@ test("trace lookup enforces the verified requester and reads only current sessio
   assert.equal(inspectAgentRun(ctx).traces.length, 1);
   assert.equal(inspectAgentRun(ctx, "b".repeat(24)).traces.length, 0);
   assert.throws(() => inspectAgentRun({ session: { auth: {} } }), { code: "access_denied" });
+});
+
+test("traces attach one redacted routing decision without inheriting it into another turn", () => {
+  const route = { ...snapshotModelRoute(chooseModelRoute("deep: Plan the event")), privateSource: "secret-source" };
+  let state = reduceAgentTraces([], event("turn.started"), "s", 0);
+  state = reduceAgentTraces(state, event("step.started", { stepIndex: 0 }), "s", 1, route);
+  state = reduceAgentTraces(state, event("step.started", { stepIndex: 0 }), "s", 2, route);
+  assert.equal(state[0].entries.length, 2);
+  assert.equal(state[0].routing.model, "openai/gpt-5.6-sol");
+  assert.equal(state[0].routing.policyVersion, "simple-v1");
+  assert.doesNotMatch(JSON.stringify(state), /secret-source/);
+  state = reduceAgentTraces(state, event("turn.started", { turnId: "next" }), "s", 3);
+  assert.equal(state[1].routing, undefined);
 });
