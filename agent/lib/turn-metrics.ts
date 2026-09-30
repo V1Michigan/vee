@@ -11,9 +11,11 @@ export type TurnMetrics = {
   tools: Record<string, ToolMetric>; failureCode?: string;
 };
 
-const safeTools = new Set(["search_slack", "read_slack", "reconnect_slack", "find_team_tools", "read_team_data", "execute_team_action", "list_agentmail_inboxes", "check_ai_gateway_usage", "web_fetch", "read_file", "write_file", "glob", "grep", "todo", "ask_question"]);
+const safeTools = new Set(["search_slack", "read_slack", "reconnect_slack", "find_team_tools", "read_team_data", "execute_team_action", "list_agentmail_inboxes", "check_ai_gateway_usage", "inspect_agent_run", "check_connections", "reconcile_records", "plan_team_tasks", "validate_announcement", "web_fetch", "read_file", "write_file", "glob", "grep", "todo", "ask_question"]);
 
-function failureCode(error?: { code?: string; message?: string }): string {
+export function safeToolName(name: string): string { return safeTools.has(name) ? name : "other"; }
+
+export function failureCode(error?: { code?: string; message?: string }): string {
   if (error?.code && failureCodes.has(error.code)) return error.code;
   const prefix = error?.message?.match(/^([a-z_]+):/)?.[1];
   return prefix && failureCodes.has(prefix) ? prefix : "runtime_error";

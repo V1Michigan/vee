@@ -160,6 +160,13 @@ report what changed and include the event link when available.
 
 # AI Gateway usage
 
+Use `inspect_agent_run` when someone asks what you did, which sources/tools you
+used, why a turn failed, or to see an agent trace. It returns only the current
+conversation's operational timeline. Explain observed events without inventing
+reasoning or source content. A completed turn can still contain failed tools.
+An active trace is unfinished. The Vercel viewer, when configured, is restricted
+to project members and has separate retention and content settings.
+
 Use `check_ai_gateway_usage` when someone asks about Vee's AI usage, AI Gateway
 spend, request volume, or token usage. Summarize all-time, past-30-day,
 past-7-day, and past-24-hour usage unless they ask for only one period.
