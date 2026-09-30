@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { reduceTurnMetrics, turnMetricsReport } from "./turn-metrics.ts";
+import { chooseModelRoute, snapshotModelRoute } from "./model-routing.ts";
 
 function event(type, data = {}, turnId = "private-turn-id") { return { type, data: { turnId, sequence: 1, ...data } }; }
 
@@ -38,9 +39,28 @@ test("missing usage is not reported as zero and each turn starts fresh", () => {
   assert.equal(report.costUsd, null);
   assert.equal(report.usageComplete, false);
   assert.equal(report.outcome, "cancelled");
+  assert.equal(report.model, null);
+  assert.equal(report.modelAttribution, "unknown");
   state = reduceTurnMetrics(state, event("turn.started", {}, "another-turn"), 200);
   assert.equal(state.outcome, undefined);
   assert.equal(turnMetricsReport(state, "s").modelCalls, 0);
   state = reduceTurnMetrics(state, event("turn.failed", { code: "untrusted-secret", message: "secret-token" }, "another-turn"), 250);
   assert.equal(turnMetricsReport(state, "s").failureCode, "runtime_error");
+});
+
+test("model attribution follows a safe turn decision and never assumes a served model", () => {
+  const route = { ...snapshotModelRoute(chooseModelRoute("deep: Plan the event")), request: "private-secret", credentials: "secret-token" };
+  let state = reduceTurnMetrics(null, event("turn.started"), 100);
+  state = reduceTurnMetrics(state, event("step.started", { stepIndex: 0 }), 120, route);
+  state = reduceTurnMetrics(state, event("step.completed", { stepIndex: 0, usage: { inputTokens: 12, outputTokens: 4 } }), 150, route);
+  const report = turnMetricsReport(state, "s");
+  assert.equal(report.schemaVersion, 2);
+  assert.equal(report.model, "openai/gpt-5.6-sol");
+  assert.equal(report.modelAttribution, "selected");
+  assert.equal(report.routing.reason, "explicit_deep");
+  assert.equal(report.routing.reasoningEffort, "low");
+  assert.equal(report.costUsd, null);
+  assert.doesNotMatch(JSON.stringify(report), /private-secret|secret-token/);
+  state = reduceTurnMetrics(state, event("turn.started", {}, "next-turn"), 200);
+  assert.equal(turnMetricsReport(state, "s").model, null);
 });

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { StreamEventHooks } from "eve/hooks";
 import { failureCode, safeToolName } from "./turn-metrics.js";
 import { teamServices } from "./team-services.js";
+import { safeModelRoute, type ModelRoute } from "./model-routing.js";
 
 type Event = Parameters<NonNullable<StreamEventHooks["*"]>>[0];
 export type TraceEntry = {
@@ -13,6 +14,7 @@ export type AgentTrace = {
   turnKey: string; startedAt: string; finishedAt?: string;
   outcome: "active" | "completed" | "failed" | "cancelled";
   entries: TraceEntry[]; truncated: boolean;
+  routing?: ModelRoute;
 };
 export type AgentTraces = AgentTrace[];
 export const MAX_TRACE_TURNS = 6;
@@ -65,7 +67,7 @@ export function traceEntries(event: Event, now: number): TraceEntry[] {
   }
 }
 
-export function reduceAgentTraces(previous: AgentTraces, event: Event, sessionId: string, now: number): AgentTraces {
+export function reduceAgentTraces(previous: AgentTraces, event: Event, sessionId: string, now: number, route?: ModelRoute | null): AgentTraces {
   const entries = traceEntries(event, now);
   if (!entries.length || !("data" in event) || !("turnId" in event.data)) return previous;
   const turnKey = hash(`${sessionId}/${event.data.turnId}`);
@@ -75,6 +77,8 @@ export function reduceAgentTraces(previous: AgentTraces, event: Event, sessionId
     trace = { turnKey, startedAt: entries[0].at, outcome: "active", entries: [], truncated: false };
     traces.push(trace);
   }
+  const routing = safeModelRoute(route);
+  if (!trace.routing && routing) trace.routing = routing;
   for (const entry of entries) if (!trace.entries.some((item) => item.key === entry.key)) {
     // Keep the beginning, where retrieval choices were made. Still update the
     // terminal state when a very long run reaches this bounded storage limit.
