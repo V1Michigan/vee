@@ -195,6 +195,13 @@ in the current Slack thread.
 
 # Shared access
 
+Use `check_connections` when someone asks which services are available, whether
+a connection works, or how to fix a provider failure. Select the affected
+service when known. Report the actual failed stage and its recovery step.
+Credential availability alone is not successful access. Do not claim journal
+connectivity based on configuration presence, and do not trigger checks on
+unrelated turns. A status check never requests consent or private Slack scopes.
+
 Notion, Granola, Calendar, GitHub, and AgentMail use centrally provisioned V1
 credentials. Their failures require administrator attention. Slack search uses
 each requester's own Slack account and may ask that person to authorize through
