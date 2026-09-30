@@ -2,8 +2,10 @@
 
 Vee is V1 at Michigan's Slack assistant, built with Eve and hosted on Vercel.
 The first release uses per-user Slack authorization and guarded access to the
-team's other services. The model remains `openai/gpt-5.6-luna`, routed through
-AI Gateway to OpenAI.
+team's other services. Routine requests use `openai/gpt-5.6-luna`. The
+[simple router](docs/model-routing.md) selects `openai/gpt-5.6-sol` for explicit
+deep requests and a few complex workflows. Both use AI Gateway with OpenAI-only
+provider routing.
 
 The release is **implemented for a gated pilot**. It is not approved for broad
 rollout. Follow [the operator checklist](docs/rollout.md) before deployment and
@@ -12,6 +14,11 @@ rollout. Follow [the operator checklist](docs/rollout.md) before deployment and
 The next [team-tool stack](docs/team-tools.md) adds conversation trace inspection,
 requester-scoped connection checks, event/task reconciliation, and announcement
 drafting. It extends the same pilot gate and action restrictions.
+
+Prefix a request with `deep:` or `standard:` to select a profile for that turn.
+Run `pnpm routing:check` to check the offline routing fixtures. The
+[router pilot](docs/model-routing.md#operator-pilot) covers live model selection,
+resume behavior, task quality, and cost.
 
 ## Access model
 
@@ -167,13 +174,15 @@ No grants were changed or revoked by the checks.
 ## Cost and observability
 
 No automatic pre-search, background summarization, indexing, scheduled model
-calls, or model changes are introduced. OAuth and provider checks are API calls,
-not model calls. Focused retrieval and removal of mandatory Notion searches can
-reduce context. Discovery and thread follow-ups can add model steps, so actual
-cost depends on the task.
+calls, or classifier-model calls are introduced. OAuth and provider checks are
+API calls. Deep requests use Sol at a higher token price, and switching models
+can reduce cache reuse. Focused retrieval can reduce context. Discovery and
+thread follow-ups can add model steps, so actual cost depends on the task.
 
 Eve hooks emit one structured `vee.turn` record per terminal turn with token
 usage, available cost, latency, tool failures/rejections, and completion status.
+Schema version 2 includes the selected model and routing reason. This is Vee's
+selection; the installed Eve hooks do not report the provider-served model ID.
 Unknown usage is `null`, not zero. Latency includes approval and OAuth waiting.
 A completed turn means Eve finished responding, not that a business workflow
 succeeded. Logs use hashed turn identifiers and omit user IDs, queries, tool

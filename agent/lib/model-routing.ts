@@ -48,7 +48,7 @@ export function chooseModelRoute(text: string, mode: string = "auto"): RoutingDe
   if (mode === "explicit") return standardRoute();
 
   // Quoted examples and link labels are evidence, not routing instructions.
-  request = request.replace(/`[^`]*`|“[^”]*”|"[^"]*"|<[^>]*>|https?:\/\/\S+/giu, " ");
+  request = request.replace(/`[^`]*`|“[^”]*”|"[^"]*"|(?<!\w)'[^']*'(?!\w)|‘[^’]*’|<[^>]*>|https?:\/\/\S+/giu, " ");
   if (/^(?:reconcile|cross-check|compare|resolve)\b/iu.test(request)) {
     const sources = ["slack", "notion", "granola", "tally"].filter((source) => new RegExp(`\\b${source}\\b`, "iu").test(request));
     const records = /\b(?:events?|schedules?|companies|company|records?|tasks?|sponsors?|attendance)\b/iu.test(request);

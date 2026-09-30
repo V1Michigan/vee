@@ -9,6 +9,7 @@
     "start": "eve start",
     "test": "node --import ./scripts/test-loader.js --test agent/lib/*.test.js",
     "typecheck": "tsc",
+    "routing:check": "node --import ./scripts/test-loader.js scripts/check-routing.js",
     "connections:check": "node --env-file-if-exists=.env.local --import ./scripts/test-loader.js scripts/connections.js check",
     "connections:authorize": "node --env-file-if-exists=.env.local --import ./scripts/test-loader.js scripts/connections.js authorize"
   },
