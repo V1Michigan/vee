@@ -9,6 +9,10 @@ The release is **implemented for a gated pilot**. It is not approved for broad
 rollout. Follow [the operator checklist](docs/rollout.md) before deployment and
 [the roadmap](ROADMAP.md) for subsequent increments.
 
+The next [team-tool stack](docs/team-tools.md) adds conversation trace inspection,
+requester-scoped connection checks, event/task reconciliation, and announcement
+drafting. It extends the same pilot gate and action restrictions.
+
 ## Access model
 
 | Source | Credential | Permitted use |

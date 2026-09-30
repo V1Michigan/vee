@@ -4,6 +4,14 @@
 
 ### Added
 
+- Conversation-local operational trace inspection and optional authenticated
+  Vercel Agent Runs navigation, without exporting messages or tool payloads.
+- On-demand connection status inside Slack, with current-requester checks and
+  stage-specific recovery guidance.
+- Sourced event comparisons and Notion task proposals that preserve conflicts,
+  missing assignments, destination values, and existing action approvals.
+- The team's event-announcement skill, adapted from PR #14, with deterministic
+  calendar, timezone, DST, publication-date, and tracking-link validation.
 - Per-user public Slack OAuth, verified requester/account matching, and optional
   private-channel consent confined to the requester's DM session.
 - Guarded Slack search and channel/thread reads with integration messages,
