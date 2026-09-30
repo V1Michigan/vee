@@ -116,5 +116,6 @@ Stripe payment links, reminders, surveys, attachment ingestion and institutional
 memory are separate increments. The current stack adds no payment connector,
 scheduled model work, indexing or automatic pre-search. Computation tools make
 no network calls. Skills add context only when loaded, and normal retrieval and
-drafting still consume the current model's tokens. Measure those costs in the
-existing turn metrics instead of assuming zero cost for an entire workflow.
+drafting still consume the [selected model's](model-routing.md) tokens. Measure
+those costs in the existing turn metrics instead of assuming zero cost for an
+entire workflow.

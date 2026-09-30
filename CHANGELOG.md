@@ -4,6 +4,9 @@
 
 ### Added
 
+- A simple model router with `deep:` and `standard:` modes, narrow workflow
+  rules, durable per-turn selection, and an offline regression corpus.
+- Routing attribution in conversation traces and version 2 turn metrics.
 - Conversation-local operational trace inspection and optional authenticated
   Vercel Agent Runs navigation, without exporting messages or tool payloads.
 - On-demand connection status inside Slack, with current-requester checks and
@@ -37,7 +40,8 @@
 - Keep private Slack context in its DM session and prevent exports through
   other providers or external actions.
 - Disable unguarded shell, child-agent, and public web tools for this release.
-- Keep GPT-5.6 Luna and OpenAI-only AI Gateway routing.
+- Keep GPT-5.6 Luna for standard turns and use GPT-5.6 Sol with low reasoning
+  effort for deep turns. Preserve OpenAI-only AI Gateway routing on both paths.
 
 ### Fixed
 
@@ -54,6 +58,8 @@
 - Two V1 users must validate authorization, privacy, retrieval, and approvals.
 - The durable write-attempt store must be configured before mutations work.
 - Missing shared grants and Calendar configuration must be provisioned.
+- Validate both model profiles, resumed turns, cost, and task quality in the
+  router pilot before relying on the automatic rules broadly.
 - No background indexing, summarization, scheduled model work, reconciliation,
   proactive reminders, or institutional memory is introduced.
 

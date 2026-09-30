@@ -44,3 +44,17 @@ its older flat skill unchanged.
 
 There is no background summarization, indexing, automatic pre-search, scheduled
 model work, payment connector, or institutional memory in this release.
+
+## Simple model router
+
+The [router stack](docs/model-routing.md) adds Luna/Sol profiles, explicit modes,
+conservative workflow rules, durable per-turn selection, and content-free
+routing attribution. Its offline corpus checks policy decisions. It does not
+establish answer quality or cost savings.
+
+- [x] Keep the current requester, tools, approvals, and private-session limits.
+- [x] Keep one selection through a turn's tool and authorization steps.
+- [x] Add deterministic regression cases and an operator rollback setting.
+- [ ] Verify both models, live resumes, and Gateway attribution in the pilot.
+- [ ] Compare paired task quality, total cost, and latency before expanding rules.
+- [ ] Consider a classifier or bounded escalation only after reviewing misroutes.

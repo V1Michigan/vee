@@ -143,8 +143,9 @@ No live mutations were performed by the implementation's diagnostic commands.
 ## Enable and recover
 
 - [ ] All automated checks and pilot rows passed on the complete stack.
-- [ ] Review per-turn usage and failure rates from representative tasks. The
-  model is unchanged. Do not claim cost savings without measured evidence.
+- [ ] Complete the [router pilot](model-routing.md#operator-pilot), including
+  selected/served model checks and paired task-quality comparisons. Review
+  per-turn usage and failure rates. Do not claim savings without measured evidence.
 - [ ] Merge stacked PRs in order and validate the cumulative deployment SHA.
 - [ ] Cancel parked approvals and auth flows from older deployments. Start fresh
   pilot conversations so old shared-auth history cannot masquerade as evidence
