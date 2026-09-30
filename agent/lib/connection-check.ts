@@ -30,18 +30,21 @@ export function slackCheckGrant(userId: string): { connector: string; params: Co
 }
 
 /** Read-only checks. Tokens and retrieved content are deliberately not returned. */
-export async function checkConnection(name: CheckName, slackUser?: string, tokenProvider = getTokenResponse): Promise<ConnectionCheck> {
+export async function checkConnection(name: CheckName, slackUser?: string, tokenProvider = getTokenResponse, abortSignal?: AbortSignal): Promise<ConnectionCheck> {
   const report: ConnectionCheck = { name, credential: "unavailable", identity: "not_checked", handshake: "not_checked", retrieval: "not_checked" };
   let stage: Stage = "credential";
   try {
+    const deadline = AbortSignal.timeout(60_000);
+    const signal = abortSignal ? AbortSignal.any([abortSignal, deadline]) : deadline;
+    signal.throwIfAborted();
     const grant = name === "slack-search" ? slackCheckGrant(slackUser ?? "") : (() => {
       if (!Object.hasOwn(sharedConnections, name)) throw new ProviderFailure("invalid_request");
       const { connector, ...params } = sharedConnections[name];
       return { connector, params };
     })();
     const { token } = await tokenProvider(grant.connector, grant.params, { forceRefresh: true });
+    signal.throwIfAborted();
     report.credential = "available";
-    const signal = AbortSignal.timeout(60_000);
     if (name === "slack-search") {
       stage = "identity";
       await verifySlackAccount(token, { teamId: process.env.VEE_SLACK_TEAM_ID ?? V1_SLACK_TEAM_ID, userId: slackUser! }, signal);

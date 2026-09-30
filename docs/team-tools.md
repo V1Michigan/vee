@@ -44,3 +44,18 @@ change. The existing OpenTelemetry configuration remains portable.
 
 Live checks remain part of the controlled pilot. Unit fixtures do not establish
 that the Vercel viewer is enabled or the Slack delivery path works.
+
+## Connection status
+
+Ask **Which connections work right now?** or **Check my Slack connection.**
+`check_connections` performs the same fixed, read-only probes as the operator
+CLI, with at most two services in flight. It derives the Slack subject from the
+verified requester. Users cannot provide another identity, query, or endpoint.
+The report distinguishes credential, identity, handshake, and retrieval stages
+and includes a service-specific recovery step. It never begins OAuth consent.
+
+Private DM sessions can check their owner's public Slack grant. They cannot
+probe other providers after requesting private context. The journal report
+checks environment presence only, labels connectivity as untested, and never
+claims or deletes a write-attempt key. Provider checks add network calls only
+when requested. They do not add model calls, polling, or scheduled work.
