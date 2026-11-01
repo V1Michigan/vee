@@ -26,7 +26,7 @@ const outputSchema = z.object({
 
 export default defineTool({
   description:
-    "Update the destination URL and/or image URL of an existing dynamic link. Use this when the user explicitly asks to change the link or confirms an update after a name conflict. The tool requires approval before execution.",
+    "Update the destination URL and/or image URL of an existing dynamic link. After a destination update, briefly say the URL for /<name> was updated without repeating either URL; for an image-only update, say the image was updated.",
   inputSchema,
   outputSchema,
   approval: always(),
