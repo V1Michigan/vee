@@ -15,7 +15,7 @@ const outputSchema = z.object({
 
 export default defineTool({
   description:
-    "Delete an existing dynamic link by its exact name. Use only when the user explicitly asks to delete that link. The tool requires approval before execution.",
+    "Delete an existing dynamic link by its exact name.",
   inputSchema,
   outputSchema,
   approval: always(),

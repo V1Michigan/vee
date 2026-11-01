@@ -20,7 +20,7 @@ const outputSchema = z.discriminatedUnion("status", [
 
 export default defineTool({
   description:
-    "Create a new dynamic link with a unique name, destination URL, and optional image URL. An explicit user request authorizes creation without a separate approval step. This tool never intentionally replaces an existing link: if the name is already in use, return the existing link and ask whether the user wants to update it.",
+    "Create a dynamic link with a unique name, destination URL, and optional image URL. After success, reply with the public URL https://v1michigan.com/<name>, using the returned name.",
   inputSchema,
   outputSchema,
   approval: never(),

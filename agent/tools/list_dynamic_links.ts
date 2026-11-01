@@ -19,7 +19,7 @@ const outputSchema = z.object({
 
 export default defineTool({
   description:
-    "List dynamic links, or look up a dynamic link by its exact name. This is read-only.",
+    "List dynamic links, or look up a dynamic link by its exact name.",
   inputSchema,
   outputSchema,
   approval: never(),
